@@ -17,6 +17,7 @@ function defaultState() {
     regionsUnlocked: ['hydro_valley'],
     encountersCleared: [],
     journal: {},
+    tutorialSeen: false,
     settings: { sound: true, textSpeed: 'normal' }
   };
 }

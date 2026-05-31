@@ -16,8 +16,7 @@
         height: 100%;
         background: #0b1020;
         overflow: hidden;
-        /* Retro bitmap font loaded from Google Fonts in PreloadScene via CSS below */
-        font-family: 'Press Start 2P', monospace;
+        font-family: 'Nunito Sans', system-ui, sans-serif;
         color: #e8f1ff;
         -webkit-tap-highlight-color: transparent;
         touch-action: none;
@@ -31,10 +30,8 @@
         justify-content: center;
       }
 
-      /* Keep pixel art crisp */
       canvas {
-        image-rendering: pixelated;
-        image-rendering: crisp-edges;
+        image-rendering: auto;
       }
 
       #loading-fallback {
@@ -42,14 +39,14 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        font-size: 12px;
-        letter-spacing: 1px;
+        font-size: 14px;
+        letter-spacing: 0.02em;
       }
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap"
       rel="stylesheet"
     />
   </head>

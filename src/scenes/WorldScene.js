@@ -1,9 +1,14 @@
 import Phaser from 'phaser';
 import GameState from '../systems/GameState.js';
 import Audio from '../systems/AudioManager.js';
-import { buildMap, TILE_COLORS } from '../systems/MapFactory.js';
+import { buildMap, TILE_CODES } from '../systems/MapFactory.js';
 import { COLORS, FONT, textStyle } from '../systems/Theme.js';
-import { TILE, VIEW_W, VIEW_H } from '../main.js';
+import { TILE, GAME_W, GAME_H } from '../main.js';
+import {
+  groundTextureKey,
+  decorForTile,
+  spriteKeyForTrigger
+} from '../systems/MpwspAssets.js';
 
 const FACING = {
   up: { dx: 0, dy: -1 },
@@ -12,6 +17,7 @@ const FACING = {
   right: { dx: 1, dy: 0 }
 };
 
+const T = TILE_CODES;
 export default class WorldScene extends Phaser.Scene {
   constructor() {
     super('World');
@@ -53,26 +59,45 @@ export default class WorldScene extends Phaser.Scene {
     // If somehow all badges already earned, go to the end.
     if (GameState.hasAllBadges()) {
       this.time.delayedCall(400, () => this._goToEnd());
+    } else if (!GameState.data.tutorialSeen) {
+      // First-time players get the How-to-Play overlay.
+      this.time.delayedCall(300, () => {
+        this.scene.pause();
+        this.scene.launch('Tutorial', { from: 'World' });
+        this.scene.bringToTop('Tutorial');
+      });
     }
   }
 
   // ---- rendering -----------------------------------------------------
+  // Bake the whole map into one RenderTexture: a ground pass (grass/path/
+  // water/sand/mud) then a decor pass (trees/rocks/flowers) on top.
   _drawGround() {
-    const g = this.add.graphics();
-    const { tiles } = this.map;
-    for (let y = 0; y < tiles.length; y++) {
-      for (let x = 0; x < tiles[y].length; x++) {
-        const color = TILE_COLORS[tiles[y][x]] ?? 0x3f8f3f;
-        g.fillStyle(color, 1);
-        g.fillRect(x * TILE, y * TILE, TILE, TILE);
-        // subtle checkerboard shade for texture
-        if ((x + y) % 2 === 0) {
-          g.fillStyle(0x000000, 0.06);
-          g.fillRect(x * TILE, y * TILE, TILE, TILE);
+    const { tiles, width, height } = this.map;
+    const rt = this.add.renderTexture(0, 0, width * TILE, height * TILE).setOrigin(0).setDepth(0);
+
+    const hash = (x, y) => Math.abs((x * 92821) ^ (y * 68917) ^ ((x + y) * 40503));
+
+    // Ground pass.
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        rt.draw(this._groundKey(tiles[y][x], x, y), x * TILE, y * TILE);
+      }
+    }
+    // Decor pass (drawn over the grass beneath them).
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const code = tiles[y][x];
+        const decor = decorForTile(code, this.regionId);
+        if (decor) {
+          rt.draw(decor, x * TILE, y * TILE - 16);
         }
       }
     }
-    g.setDepth(0);
+  }
+
+  _groundKey(code, x, y) {
+    return groundTextureKey(code, x, y);
   }
 
   _spawnTriggers() {
@@ -80,7 +105,8 @@ export default class WorldScene extends Phaser.Scene {
     this.map.triggers.forEach((trig) => {
       const px = trig.x * TILE + TILE / 2;
       const py = trig.y * TILE + TILE / 2;
-      const spr = this.add.image(px, py, trig.sprite || 'npc_spirit').setDepth(5);
+            const sheet = spriteKeyForTrigger(trig, this.regionId);
+      const spr = this.add.sprite(px, py, sheet, 0).setScale(0.42).setDepth(5);
 
       // Cleared encounters get a check tint; dim them slightly.
       let cleared = false;
@@ -91,22 +117,22 @@ export default class WorldScene extends Phaser.Scene {
 
       // Floating label above NPC.
       const label = this.add
-        .text(px, py - 12, trig.label || '', textStyle(6, COLORS.text))
+        .text(px, py - 40, trig.label || '', textStyle(16, COLORS.text))
         .setOrigin(0.5)
         .setDepth(6);
       label.setVisible(false);
 
-      // small check mark for cleared
+      // check mark for cleared encounters
       let check = null;
       if (cleared) {
-        check = this.add.text(px + 5, py - 11, '\u2713', textStyle(7, COLORS.good)).setOrigin(0.5).setDepth(7);
+        check = this.add.text(px + 22, py - 26, '\u2713', textStyle(20, COLORS.good)).setOrigin(0.5).setDepth(7);
       }
 
       this.triggerSprites.push({ trig, spr, label, check });
 
       // gentle bob for living NPCs/spirits
       if (trig.type !== 'door' && trig.sprite !== 'npc_sign') {
-        this.tweens.add({ targets: spr, y: py - 2, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+        this.tweens.add({ targets: spr, y: py - 8, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
       }
     });
   }
@@ -131,23 +157,35 @@ export default class WorldScene extends Phaser.Scene {
     const px = x * TILE + TILE / 2;
     const py = y * TILE + TILE / 2;
 
-    this.playerBody = this.add.image(0, 0, 'player');
-    this.facingMarker = this.add.rectangle(0, -4, 5, 3, 0x6b4f1d);
-    this.player = this.add.container(px, py, [this.playerBody, this.facingMarker]);
-    this.player.setSize(TILE, TILE);
-    this.player.setDepth(10);
-    this._updateFacingMarker();
+    this._ensureAnims();
+    this.player = this.add.sprite(px, py, 'hero', `${this.facing}0`).setScale(0.5).setDepth(10);
 
-    // Companion droplet trailing behind.
-    this.companion = this.add.image(px - 10, py + 4, 'companion').setScale(0.85).setDepth(9);
-    this.tweens.add({ targets: this.companion, y: py + 1, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    // Companion droplet trailing behind (slightly smaller than the hero).
+    this.companion = this.add.sprite(px - 48, py + 18, 'mpw_spirit_b', 0).setScale(0.35).setDepth(9);
+    this.tweens.add({ targets: this.companion, y: py + 6, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
 
     GameState.data.player = { x, y, facing: this.facing };
   }
 
-  _updateFacingMarker() {
-    const d = FACING[this.facing];
-    this.facingMarker.setPosition(d.dx * 5, d.dy * 5 - 1);
+  _ensureAnims() {
+    ['down', 'up', 'left', 'right'].forEach((d) => {
+      const key = `walk-${d}`;
+      if (this.anims.exists(key)) return;
+      this.anims.create({
+        key,
+        frames: [
+          { key: 'hero', frame: `${d}0` },
+          { key: 'hero', frame: `${d}1` }
+        ],
+        frameRate: 6,
+        repeat: -1
+      });
+    });
+  }
+
+  _setPlayerIdle() {
+    if (this.player.anims) this.player.anims.stop();
+    this.player.setFrame(`${this.facing}0`);
   }
 
   _setupCamera() {
@@ -161,11 +199,12 @@ export default class WorldScene extends Phaser.Scene {
   _buildHUD() {
     this.hud = this.add.container(0, 0).setScrollFactor(0).setDepth(100);
 
-    const bar = this.add.rectangle(0, 0, VIEW_W, 16, 0x0b1020, 0.85).setOrigin(0);
-    bar.setStrokeStyle(0);
-    const name = this.add.text(4, 4, this.regionDef ? this.regionDef.name : '', textStyle(7, COLORS.accent));
+    // Solid top bar (opaque so the map behind never bleeds through).
+    const bar = this.add.rectangle(0, 0, GAME_W, 64, COLORS.panel, 1).setOrigin(0);
+    const barEdge = this.add.rectangle(0, 64, GAME_W, 4, COLORS.border, 1).setOrigin(0);
+    const name = this.add.text(16, 16, this.regionDef ? this.regionDef.name : '', textStyle(28, COLORS.accent));
 
-    this.hud.add([bar, name]);
+    this.hud.add([bar, barEdge, name]);
 
     // Badge icons (right side).
     const badgeKeys = [
@@ -174,15 +213,17 @@ export default class WorldScene extends Phaser.Scene {
       { key: 'badge_tideguard', flag: 'tideguard' }
     ];
     badgeKeys.forEach((b, i) => {
-      const icon = this.add.image(VIEW_W - 12 - i * 16, 8, b.key).setScale(0.5);
+      const icon = this.add.image(GAME_W - 44 - i * 64, 32, b.key).setScale(1.6);
       icon.setAlpha(GameState.data.badges[b.flag] ? 1 : 0.25);
       this.hud.add(icon);
       b.icon = icon;
     });
     this._badgeIcons = badgeKeys;
 
-    const hint = this.add.text(4, VIEW_H - 10, 'Move: Arrows/WASD  Act: SPACE  Journal: J', textStyle(5, COLORS.textDim)).setScrollFactor(0).setDepth(100);
-    this.hud.add(hint);
+    // Bottom hint with its own solid strip for legibility over the map.
+    const hintStrip = this.add.rectangle(0, GAME_H - 40, GAME_W, 40, COLORS.panel, 0.92).setOrigin(0);
+    const hint = this.add.text(16, GAME_H - 30, 'Move: Arrows/WASD    Act: SPACE    Journal: J    Pause: ESC', textStyle(18, COLORS.textDim));
+    this.hud.add([hintStrip, hint]);
   }
 
   _refreshHUD() {
@@ -217,14 +258,14 @@ export default class WorldScene extends Phaser.Scene {
     if (!isTouch) return;
 
     const mk = (x, y, label, onDown) => {
-      const btn = this.add.circle(x, y, 12, COLORS.panelLight, 0.7).setScrollFactor(0).setDepth(120).setStrokeStyle(2, COLORS.border).setInteractive({ useHandCursor: true });
-      const t = this.add.text(x, y, label, textStyle(8)).setOrigin(0.5).setScrollFactor(0).setDepth(121);
+      const btn = this.add.circle(x, y, 48, COLORS.panelLight, 0.7).setScrollFactor(0).setDepth(120).setStrokeStyle(4, COLORS.border).setInteractive({ useHandCursor: true });
+      const t = this.add.text(x, y, label, textStyle(28)).setOrigin(0.5).setScrollFactor(0).setDepth(121);
       btn.on('pointerdown', onDown);
       return { btn, t };
     };
 
-    const baseX = 28;
-    const baseY = VIEW_H - 44;
+    const baseX = 112;
+    const baseY = GAME_H - 168;
     this._dpadHeld = null;
     const dpad = (x, y, label, dir) => {
       const o = mk(x, y, label, () => {
@@ -234,13 +275,13 @@ export default class WorldScene extends Phaser.Scene {
       o.btn.on('pointerout', () => (this._dpadHeld = null));
       return o;
     };
-    dpad(baseX, baseY - 16, '\u25B2', 'up');
-    dpad(baseX, baseY + 16, '\u25BC', 'down');
-    dpad(baseX - 18, baseY, '\u25C0', 'left');
-    dpad(baseX + 18, baseY, '\u25B6', 'right');
+    dpad(baseX, baseY - 72, '\u25B2', 'up');
+    dpad(baseX, baseY + 72, '\u25BC', 'down');
+    dpad(baseX - 72, baseY, '\u25C0', 'left');
+    dpad(baseX + 72, baseY, '\u25B6', 'right');
 
-    mk(VIEW_W - 30, VIEW_H - 30, 'A', () => this._tryAction());
-    mk(VIEW_W - 30, VIEW_H - 58, 'J', () => this._openJournal());
+    mk(GAME_W - 120, GAME_H - 120, 'A', () => this._tryAction());
+    mk(GAME_W - 120, GAME_H - 232, 'J', () => this._openJournal());
   }
 
   // ---- movement ------------------------------------------------------
@@ -264,7 +305,6 @@ export default class WorldScene extends Phaser.Scene {
   _tryMove(dir) {
     const turning = this.facing !== dir;
     this.facing = dir;
-    this._updateFacingMarker();
 
     const d = FACING[dir];
     const nx = this.tileX + d.dx;
@@ -274,6 +314,7 @@ export default class WorldScene extends Phaser.Scene {
     // re-orient without immediately walking (feels like classic RPGs).
     if (turning) {
       this.moveCooldown = 90;
+      this._setPlayerIdle();
     }
 
     const blocked =
@@ -285,6 +326,7 @@ export default class WorldScene extends Phaser.Scene {
 
     if (blocked) {
       this.moveCooldown = Math.max(this.moveCooldown, 60);
+      this._setPlayerIdle();
       return;
     }
 
@@ -294,6 +336,7 @@ export default class WorldScene extends Phaser.Scene {
     const tx = nx * TILE + TILE / 2;
     const ty = ny * TILE + TILE / 2;
     Audio.play('move');
+    this.player.anims.play(`walk-${dir}`, true);
 
     this.tweens.add({
       targets: this.player,
@@ -307,16 +350,26 @@ export default class WorldScene extends Phaser.Scene {
         this._moveCompanion(tx, ty);
         GameState.save();
         this._checkStepTrigger();
+        // Stop the walk cycle if no movement key is still held.
+        if (!this._anyDirHeld()) this._setPlayerIdle();
       }
     });
+  }
+
+  _anyDirHeld() {
+    return (
+      this.cursors.up.isDown || this.cursors.down.isDown || this.cursors.left.isDown || this.cursors.right.isDown ||
+      this.keys.W.isDown || this.keys.A.isDown || this.keys.S.isDown || this.keys.D.isDown ||
+      !!this._dpadHeld
+    );
   }
 
   _moveCompanion(tx, ty) {
     const d = FACING[this.facing];
     this.tweens.add({
       targets: this.companion,
-      x: tx - d.dx * 10,
-      y: ty - d.dy * 10 + 2,
+      x: tx - d.dx * 38,
+      y: ty - d.dy * 38 + 8,
       duration: 160,
       ease: 'Sine.out'
     });
