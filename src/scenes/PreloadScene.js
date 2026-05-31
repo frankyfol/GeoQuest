@@ -141,16 +141,21 @@ export default class PreloadScene extends Phaser.Scene {
     generateTiles(this);
     generateCharacters(this);
 
-    // Badge icons.
-    const badge = (key, color) =>
+    // Gym-style badge icons: a faceted gem with a rim and a shine.
+    const badge = (key, color, dark) =>
       make(key, 24, 24, (g) => {
-        g.fillStyle(color, 1);
-        g.fillCircle(12, 12, 11);
+        g.fillStyle(0xffffff, 1); g.fillCircle(12, 12, 11); // bright rim
+        g.fillStyle(dark, 1); g.fillCircle(12, 12, 10);
+        g.fillStyle(color, 1); g.fillCircle(12, 12, 8);
+        // facet highlight (upper-left) and shine
+        g.fillStyle(0xffffff, 0.35); g.fillCircle(10, 10, 5);
+        g.fillStyle(0xffffff, 0.95); g.fillCircle(9, 9, 2);
+        // four-point sparkle
         g.fillStyle(0xffffff, 0.85);
-        g.fillCircle(9, 9, 3);
+        g.fillRect(15, 14, 1, 5); g.fillRect(13, 16, 5, 1);
       });
-    badge('badge_water', 0x4fc3f7);
-    badge('badge_canopy', 0x66bb6a);
-    badge('badge_tideguard', 0x26a69a);
+    badge('badge_water', 0x4fc3f7, 0x1f6fb2);
+    badge('badge_canopy', 0x66bb6a, 0x2f8f46);
+    badge('badge_tideguard', 0x26a69a, 0x1f8f8f);
   }
 }
