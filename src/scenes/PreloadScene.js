@@ -45,7 +45,7 @@ export default class PreloadScene extends Phaser.Scene {
     const pct = this.add
       .text(w / 2, by + 28, '0%', {
         fontFamily: FONT,
-        fontSize: '8px',
+        fontSize: '11px',
         color: '#9fb3d1'
       })
       .setOrigin(0.5);

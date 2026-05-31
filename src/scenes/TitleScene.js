@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import GameState from '../systems/GameState.js';
 import Audio from '../systems/AudioManager.js';
-import { COLORS, FONT, textStyle } from '../systems/Theme.js';
+import { COLORS, FONT, textStyle, uiCamera } from '../systems/Theme.js';
 import { VIEW_W, VIEW_H } from '../main.js';
 
 export default class TitleScene extends Phaser.Scene {
@@ -12,18 +12,33 @@ export default class TitleScene extends Phaser.Scene {
   create() {
     const cx = VIEW_W / 2;
 
-    // Backdrop: simple gradient-ish layered rectangles for a sky/island vibe.
-    this.add.rectangle(0, 0, VIEW_W, VIEW_H, 0x0b1020).setOrigin(0);
-    this.add.rectangle(0, VIEW_H - 70, VIEW_W, 70, 0x123a2e).setOrigin(0);
-    this.add.rectangle(0, VIEW_H - 40, VIEW_W, 40, 0x0d2b46).setOrigin(0);
-    // a little sun
-    this.add.circle(cx + 90, 48, 16, 0xffd166);
+    uiCamera(this);
+    // Sky gradient.
+    this.add.rectangle(0, 0, VIEW_W, VIEW_H, 0x163a63).setOrigin(0);
+    this.add.rectangle(0, 0, VIEW_W, 90, 0x2a5d92).setOrigin(0);
+    // Sun tucked into the top-left so it never clashes with the logo.
+    this.add.circle(34, 28, 13, 0xffd166);
+    this.add.circle(34, 28, 18, 0xffe39a, 0.25);
+
+    // Island made of the real game tiles: a grassy shore over a sandy beach
+    // and a shimmering sea, with a few trees and the hero standing on it.
+    this._tileStrip('tile_grass', VIEW_H - 86, 2);
+    this._tileStrip('tile_sand', VIEW_H - 54, 1);
+    this._tileStrip('tile_water', VIEW_H - 38, 3);
+    [40, 86, 250, 286].forEach((x, i) => {
+      const tr = this.add.image(x, VIEW_H - 82, 'tile_tree').setOrigin(0.5, 1).setScale(0.5);
+      this.tweens.add({ targets: tr, scaleX: 0.55, duration: 1400 + i * 200, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    });
+    const hero = this.add.image(60, VIEW_H - 60, 'hero', 'down0').setScale(0.6);
+    this.tweens.add({ targets: hero, y: VIEW_H - 62, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
 
     this.add
       .text(cx, 46, 'GEOQUEST', {
         fontFamily: FONT,
         fontSize: '24px',
-        color: '#5bc0eb'
+        color: '#eaf6ff',
+        stroke: '#123a5a',
+        strokeThickness: 4
       })
       .setOrigin(0.5);
     this.add
@@ -31,7 +46,7 @@ export default class TitleScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     // Companion droplet bobbing.
-    const droplet = this.add.image(cx, 116, 'companion').setScale(2);
+    const droplet = this.add.image(cx, 116, 'companion').setScale(0.7);
     this.tweens.add({
       targets: droplet,
       y: 110,
@@ -44,8 +59,8 @@ export default class TitleScene extends Phaser.Scene {
     const hasSave = GameState.hasSave();
 
     this._buttons = [];
-    this._makeButton(cx, 150, 'New Game', () => this._startNewGame(hasSave));
-    this._continueBtn = this._makeButton(cx, 174, 'Continue', () => {
+    this._makeButton(cx, 144, 'New Game', () => this._startNewGame(hasSave));
+    this._continueBtn = this._makeButton(cx, 166, 'Continue', () => {
       if (GameState.hasSave()) {
         GameState.load();
         Audio.play('select');
@@ -54,14 +69,20 @@ export default class TitleScene extends Phaser.Scene {
     });
     if (!hasSave) this._setButtonEnabled(this._continueBtn, false);
 
-    this._makeButton(cx, 198, 'Settings', () => {
+    this._makeButton(cx, 188, 'How to Play', () => {
+      Audio.play('open');
+      this.scene.launch('Tutorial', { from: 'Title' });
+      this.scene.bringToTop('Tutorial');
+    });
+
+    this._makeButton(cx, 210, 'Settings', () => {
       Audio.play('open');
       this.scene.launch('Settings', { from: 'Title' });
       this.scene.bringToTop('Settings');
     });
 
     this.add
-      .text(cx, VIEW_H - 10, 'Learn the island. Heal the island.', textStyle(6, COLORS.textDim))
+      .text(cx, VIEW_H - 8, 'Learn the island. Heal the island.', textStyle(6, COLORS.textDim))
       .setOrigin(0.5);
 
     // Start title music on first interaction (audio needs a gesture).
@@ -73,6 +94,16 @@ export default class TitleScene extends Phaser.Scene {
       Audio.resume();
       Audio.playMusic('title');
     });
+  }
+
+  // Tile a texture horizontally across the screen for `rows` rows. The 64px
+  // tile art is shown at 16px in this compact title backdrop.
+  _tileStrip(key, y, rows) {
+    for (let r = 0; r < rows; r++) {
+      for (let x = 0; x < VIEW_W; x += 16) {
+        this.add.image(x, y + r * 16, key).setOrigin(0).setDisplaySize(16, 16);
+      }
+    }
   }
 
   _makeButton(x, y, label, onClick) {

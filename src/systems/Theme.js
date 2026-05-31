@@ -1,7 +1,13 @@
-// Theme.js
-// Shared visual constants and small UI helpers (retro font, panels, buttons).
+// Theme.js — colours, readable UI typography, panels, and UI camera setup.
+import { UI_ZOOM, VIEW_W, VIEW_H } from '../main.js';
 
-export const FONT = '"Press Start 2P", monospace';
+/** Clear sans-serif for all in-game text (replaces bitmap Press Start 2P). */
+export const FONT = '"Nunito Sans", "Segoe UI", system-ui, sans-serif';
+
+export function uiCamera(scene) {
+  scene.cameras.main.setZoom(UI_ZOOM);
+  scene.cameras.main.centerOn(VIEW_W / 2, VIEW_H / 2);
+}
 
 export const COLORS = {
   bg: 0x0b1020,
@@ -18,17 +24,26 @@ export const COLORS = {
   tide: 0x26a69a
 };
 
-// Default bitmap-style text style.
-export function textStyle(size = 8, color = COLORS.text) {
+const DPR = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 2;
+
+export function textStyle(size = 10, color = COLORS.text) {
   return {
     fontFamily: FONT,
     fontSize: `${size}px`,
     color,
-    resolution: 2
+    resolution: DPR
   };
 }
 
-// Draw a retro 9-slice-ish panel using a Graphics object.
+/** Dialogue / long-form copy — larger size and extra line spacing. */
+export function bodyTextStyle(size = 11, color = COLORS.text, wrapWidth = VIEW_W - 32) {
+  return {
+    ...textStyle(size, color),
+    wordWrap: { width: wrapWidth },
+    lineSpacing: 5
+  };
+}
+
 export function drawPanel(scene, x, y, w, h, opts = {}) {
   const g = scene.add.graphics();
   const fill = opts.fill !== undefined ? opts.fill : COLORS.panel;
@@ -41,4 +56,4 @@ export function drawPanel(scene, x, y, w, h, opts = {}) {
   return g;
 }
 
-export default { FONT, COLORS, textStyle, drawPanel };
+export default { FONT, COLORS, textStyle, bodyTextStyle, drawPanel, uiCamera };

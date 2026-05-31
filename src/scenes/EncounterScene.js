@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import GameState from '../systems/GameState.js';
 import Audio from '../systems/AudioManager.js';
 import { checkAnswer } from '../systems/QuestionEngine.js';
-import { COLORS, textStyle, drawPanel } from '../systems/Theme.js';
+import { COLORS, textStyle, bodyTextStyle, drawPanel, uiCamera } from '../systems/Theme.js';
 import { VIEW_W, VIEW_H } from '../main.js';
 
 // The quiz "battle" engine. You cannot lose: wrong answers show a hint and
@@ -17,6 +17,7 @@ export default class EncounterScene extends Phaser.Scene {
   }
 
   create() {
+    uiCamera(this);
     const qdata = this.cache.json.get('questions');
     this.regions = this.cache.json.get('regions').regions;
     this.encounter = qdata.encounters.find((e) => e.id === this.encounterId);
@@ -88,11 +89,12 @@ export default class EncounterScene extends Phaser.Scene {
   }
 
   _panelText(str, y, opts = {}) {
-    const t = this.add.text(this.panel.x + 8, this.panel.y + (y || 6), str, {
-      ...textStyle(opts.size || 8, opts.color || COLORS.text),
-      wordWrap: { width: this.panel.w - 16 },
-      lineSpacing: 3
-    });
+    const t = this.add.text(
+      this.panel.x + 8,
+      this.panel.y + (y || 6),
+      str,
+      bodyTextStyle(opts.size || 10, opts.color || COLORS.text, this.panel.w - 16)
+    );
     this.widgets.push(t);
     return t;
   }
@@ -159,7 +161,7 @@ export default class EncounterScene extends Phaser.Scene {
     const w = opts.w !== undefined ? opts.w : this.panel.w - 16;
     const box = this.add.rectangle(x, y, w, 15, opts.fill || COLORS.panelLight, 1).setOrigin(0).setStrokeStyle(1, COLORS.border);
     const t = this.add
-      .text(x + 6, y + 3, label, { ...textStyle(opts.size || 7), wordWrap: { width: w - 14 }, lineSpacing: 1 })
+      .text(x + 6, y + 3, label, { ...textStyle(opts.size || 9), wordWrap: { width: w - 14 }, lineSpacing: 1 })
       .setOrigin(0);
     const h = Math.max(15, Math.ceil(t.height) + 6);
     box.setSize(w, h);
@@ -171,7 +173,7 @@ export default class EncounterScene extends Phaser.Scene {
   _renderChoices(options, onPick, startY) {
     let y = startY;
     options.forEach((opt, i) => {
-      const { box, bottom } = this._optionRow(y, `${i + 1}. ${opt}`, { size: 7 });
+      const { box, bottom } = this._optionRow(y, `${i + 1}. ${opt}`, { size: 9 });
       box.on('pointerover', () => box.setFillStyle(0x3a5088));
       box.on('pointerout', () => box.setFillStyle(COLORS.panelLight));
       box.on('pointerdown', () => {
@@ -193,7 +195,7 @@ export default class EncounterScene extends Phaser.Scene {
     const toggles = [];
     let y = startY;
     q.options.forEach((opt, i) => {
-      const { box, t, bottom } = this._optionRow(y, `[ ] ${i + 1}. ${opt}`, { size: 7 });
+      const { box, t, bottom } = this._optionRow(y, `[ ] ${i + 1}. ${opt}`, { size: 9 });
       const toggle = () => {
         if (selected.has(i)) {
           selected.delete(i);
@@ -235,7 +237,7 @@ export default class EncounterScene extends Phaser.Scene {
     let y = startY + hint.height + 3;
 
     q.items.forEach((item, i) => {
-      const row = this._optionRow(y, item, { size: 7 });
+      const row = this._optionRow(y, item, { size: 9 });
       const pick = () => {
         if (chosen.includes(i)) return;
         chosen.push(i);
@@ -285,7 +287,7 @@ export default class EncounterScene extends Phaser.Scene {
 
     let ly = top;
     q.left.forEach((item, i) => {
-      const row = this._optionRow(ly, `${i + 1}. ${item}`, { size: 6, x: leftX, w: colW });
+      const row = this._optionRow(ly, `${i + 1}. ${item}`, { size: 8, x: leftX, w: colW });
       row.box.on('pointerdown', () => {
         selectedLeft = i;
         Audio.play('move');
@@ -297,7 +299,7 @@ export default class EncounterScene extends Phaser.Scene {
 
     let ry = top;
     q.right.forEach((item, j) => {
-      const row = this._optionRow(ry, `${String.fromCharCode(65 + j)}. ${item}`, { size: 6, x: rightX, w: colW });
+      const row = this._optionRow(ry, `${String.fromCharCode(65 + j)}. ${item}`, { size: 8, x: rightX, w: colW });
       row.box.on('pointerdown', () => {
         if (selectedLeft === null) return;
         for (let k = pairs.length - 1; k >= 0; k--) {
@@ -346,7 +348,7 @@ export default class EncounterScene extends Phaser.Scene {
 
     this._clearWidgets();
     const head = this._panelText('Correct!', 6, { color: COLORS.good });
-    const body = this._panelText(q.explanation, head.y - this.panel.y + head.height + 6, { size: 7 });
+    const body = this._panelText(q.explanation, head.y - this.panel.y + head.height + 6, { size: 9 });
     this._continuePrompt(
       () => {
         Audio.play('select');

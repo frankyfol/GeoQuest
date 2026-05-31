@@ -8,24 +8,27 @@ import EncounterScene from './scenes/EncounterScene.js';
 import JournalScene from './scenes/JournalScene.js';
 import DialogueScene from './scenes/DialogueScene.js';
 import SettingsScene from './scenes/SettingsScene.js';
+import TutorialScene from './scenes/TutorialScene.js';
 import EndScene from './scenes/EndScene.js';
 import GameState from './systems/GameState.js';
 
-// Logical resolution: a 16px tile grid, viewport of 20x15 tiles = 320x240,
-// scaled up x3 by Phaser's Scale Manager for a chunky retro look.
-export const TILE = 16;
+// 64px tiles on a 20×15 grid → 1280×960 world. UI scenes use 320×240 + 4× zoom.
+export const TILE = 64;
+export const GAME_W = 1280;
+export const GAME_H = 960;
 export const VIEW_W = 320;
 export const VIEW_H = 240;
-export const ZOOM = 3;
+export const UI_ZOOM = 4;
 
 const config = {
   type: Phaser.AUTO,
   parent: 'game-root',
-  width: VIEW_W,
-  height: VIEW_H,
-  zoom: ZOOM,
-  pixelArt: true,
-  roundPixels: true,
+  width: GAME_W,
+  height: GAME_H,
+  zoom: 1,
+  pixelArt: false,
+  roundPixels: false,
+  antialias: true,
   backgroundColor: '#0b1020',
   scale: {
     mode: Phaser.Scale.FIT,
@@ -44,13 +47,12 @@ const config = {
     JournalScene,
     DialogueScene,
     SettingsScene,
+    TutorialScene,
     EndScene
   ]
 };
 
-// Remove the static loading fallback once Phaser is ready to render.
 const game = new Phaser.Game(config);
-// Expose for debugging / automated smoke tests.
 window.__GAME = game;
 window.__GS = GameState;
 game.events.once('ready', () => {

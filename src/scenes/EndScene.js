@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import GameState from '../systems/GameState.js';
 import Audio from '../systems/AudioManager.js';
-import { COLORS, FONT, textStyle } from '../systems/Theme.js';
+import { COLORS, FONT, textStyle, uiCamera } from '../systems/Theme.js';
 import { VIEW_W, VIEW_H } from '../main.js';
 
 // Victory screen: the island is healed once all three badges are earned.
@@ -11,6 +11,7 @@ export default class EndScene extends Phaser.Scene {
   }
 
   create() {
+    uiCamera(this);
     const cx = VIEW_W / 2;
     this.add.rectangle(0, 0, VIEW_W, VIEW_H, 0x0b2a1a).setOrigin(0);
     this.add.circle(cx, 60, 24, 0xffd166); // healed sun
