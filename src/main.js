@@ -8,6 +8,7 @@ import EncounterScene from './scenes/EncounterScene.js';
 import JournalScene from './scenes/JournalScene.js';
 import DialogueScene from './scenes/DialogueScene.js';
 import SettingsScene from './scenes/SettingsScene.js';
+import TutorialScene from './scenes/TutorialScene.js';
 import EndScene from './scenes/EndScene.js';
 import GameState from './systems/GameState.js';
 
@@ -51,6 +52,7 @@ const config = {
     JournalScene,
     DialogueScene,
     SettingsScene,
+    TutorialScene,
     EndScene
   ]
 };

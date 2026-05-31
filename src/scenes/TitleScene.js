@@ -59,8 +59,8 @@ export default class TitleScene extends Phaser.Scene {
     const hasSave = GameState.hasSave();
 
     this._buttons = [];
-    this._makeButton(cx, 150, 'New Game', () => this._startNewGame(hasSave));
-    this._continueBtn = this._makeButton(cx, 174, 'Continue', () => {
+    this._makeButton(cx, 144, 'New Game', () => this._startNewGame(hasSave));
+    this._continueBtn = this._makeButton(cx, 166, 'Continue', () => {
       if (GameState.hasSave()) {
         GameState.load();
         Audio.play('select');
@@ -69,14 +69,20 @@ export default class TitleScene extends Phaser.Scene {
     });
     if (!hasSave) this._setButtonEnabled(this._continueBtn, false);
 
-    this._makeButton(cx, 198, 'Settings', () => {
+    this._makeButton(cx, 188, 'How to Play', () => {
+      Audio.play('open');
+      this.scene.launch('Tutorial', { from: 'Title' });
+      this.scene.bringToTop('Tutorial');
+    });
+
+    this._makeButton(cx, 210, 'Settings', () => {
       Audio.play('open');
       this.scene.launch('Settings', { from: 'Title' });
       this.scene.bringToTop('Settings');
     });
 
     this.add
-      .text(cx, VIEW_H - 10, 'Learn the island. Heal the island.', textStyle(6, COLORS.textDim))
+      .text(cx, VIEW_H - 8, 'Learn the island. Heal the island.', textStyle(6, COLORS.textDim))
       .setOrigin(0.5);
 
     // Start title music on first interaction (audio needs a gesture).

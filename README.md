@@ -95,6 +95,9 @@ proving you understand how they work.
    **badge** and open the gate to the next region.
 5. Open the **Field Journal** any time (press `J`) to review what you've learned.
 
+A short **How to Play** tutorial appears automatically the first time you start
+a new game, and can be reopened any time from the Title screen.
+
 The core promise: **progress is the only outcome.** The game teaches through
 hints and retries, so it's safe to be wrong.
 
@@ -316,7 +319,7 @@ geoquest/
 └── src/
     ├── main.js                  # Phaser config + scene registration
     ├── scenes/                  # Boot, Preload, Title, World, Encounter,
-    │                            #   Dialogue, Journal, Settings, End
+    │                            #   Dialogue, Journal, Settings, Tutorial, End
     └── systems/                 # GameState, QuestionEngine, DialogueManager,
                                  #   AudioManager, MapFactory, Tileset, Theme
 ```

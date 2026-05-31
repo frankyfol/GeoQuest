@@ -58,6 +58,13 @@ export default class WorldScene extends Phaser.Scene {
     // If somehow all badges already earned, go to the end.
     if (GameState.hasAllBadges()) {
       this.time.delayedCall(400, () => this._goToEnd());
+    } else if (!GameState.data.tutorialSeen) {
+      // First-time players get the How-to-Play overlay.
+      this.time.delayedCall(300, () => {
+        this.scene.pause();
+        this.scene.launch('Tutorial', { from: 'World' });
+        this.scene.bringToTop('Tutorial');
+      });
     }
   }
 
