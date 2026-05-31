@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { COLORS, FONT } from '../systems/Theme.js';
+import { COLORS, FONT, uiCamera } from '../systems/Theme.js';
 import { VIEW_W, VIEW_H } from '../main.js';
 import { generateTiles, generateCharacters } from '../systems/Tileset.js';
 
@@ -11,6 +11,7 @@ export default class PreloadScene extends Phaser.Scene {
   }
 
   preload() {
+    uiCamera(this);
     this._buildLoadingBar();
 
     // Load all teaching content from public/assets/data via fetch (Phaser loader).

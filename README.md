@@ -273,7 +273,7 @@ World → End              (when all three badges are earned)
   `save() / load() / hasSave() / newGame()` and helpers for journal state,
   companion XP, badges and region unlocking.
 - `QuestionEngine.js` — pure `checkAnswer()` grading for all five question types.
-- `Tileset.js` — generates all in-game art at runtime as crisp 16×16 pixel-art:
+- `Tileset.js` — generates all in-game art at runtime as crisp 64×64 pixel-art:
   textured tiles (grass, path, water, sand, mud, trees, rocks, flowers) and
   outlined chibi character sprites (an animated walking hero, NPC rangers and
   villagers, spirit orbs, a boss guardian, a signpost, a stone gate and the
@@ -456,7 +456,9 @@ NPC conversations:
 - **Engine:** [Phaser 3](https://phaser.io/) (HTML5 Canvas/WebGL).
 - **Build tool:** [Vite](https://vitejs.dev/).
 - **Language:** plain JavaScript (ES modules) — no TypeScript, no framework.
-- **Rendering:** 16×16 tile grid, zoomed ×3, `pixelArt: true` for crisp pixels.
+- **Rendering:** 64×64 pixel tiles on a 1280×960 internal resolution (scaled to
+  fit the window), `pixelArt: true` for crisp pixels. UI scenes are authored in a
+  compact 320×240 design space and shown through a ×4 camera zoom.
 - **Audio:** Web Audio API (procedural music + SFX).
 - **Persistence:** browser `localStorage`.
 

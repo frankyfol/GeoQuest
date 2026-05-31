@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import GameState from '../systems/GameState.js';
 import Audio from '../systems/AudioManager.js';
-import { COLORS, FONT, textStyle } from '../systems/Theme.js';
+import { COLORS, FONT, textStyle, uiCamera } from '../systems/Theme.js';
 import { VIEW_W, VIEW_H } from '../main.js';
 
 export default class TitleScene extends Phaser.Scene {
@@ -12,6 +12,7 @@ export default class TitleScene extends Phaser.Scene {
   create() {
     const cx = VIEW_W / 2;
 
+    uiCamera(this);
     // Sky gradient.
     this.add.rectangle(0, 0, VIEW_W, VIEW_H, 0x163a63).setOrigin(0);
     this.add.rectangle(0, 0, VIEW_W, 90, 0x2a5d92).setOrigin(0);
@@ -25,10 +26,10 @@ export default class TitleScene extends Phaser.Scene {
     this._tileStrip('tile_sand', VIEW_H - 54, 1);
     this._tileStrip('tile_water', VIEW_H - 38, 3);
     [40, 86, 250, 286].forEach((x, i) => {
-      const tr = this.add.image(x, VIEW_H - 82, 'tile_tree').setOrigin(0.5, 1).setScale(1.6);
-      this.tweens.add({ targets: tr, scaleX: 1.7, duration: 1400 + i * 200, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+      const tr = this.add.image(x, VIEW_H - 82, 'tile_tree').setOrigin(0.5, 1).setScale(0.5);
+      this.tweens.add({ targets: tr, scaleX: 0.55, duration: 1400 + i * 200, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
     });
-    const hero = this.add.image(60, VIEW_H - 60, 'hero', 'down0').setScale(2);
+    const hero = this.add.image(60, VIEW_H - 60, 'hero', 'down0').setScale(0.6);
     this.tweens.add({ targets: hero, y: VIEW_H - 62, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
 
     this.add
@@ -45,7 +46,7 @@ export default class TitleScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     // Companion droplet bobbing.
-    const droplet = this.add.image(cx, 116, 'companion').setScale(2);
+    const droplet = this.add.image(cx, 116, 'companion').setScale(0.7);
     this.tweens.add({
       targets: droplet,
       y: 110,
@@ -89,11 +90,12 @@ export default class TitleScene extends Phaser.Scene {
     });
   }
 
-  // Tile a texture horizontally across the screen for `rows` rows.
+  // Tile a texture horizontally across the screen for `rows` rows. The 64px
+  // tile art is shown at 16px in this compact title backdrop.
   _tileStrip(key, y, rows) {
     for (let r = 0; r < rows; r++) {
       for (let x = 0; x < VIEW_W; x += 16) {
-        this.add.image(x, y + r * 16, key).setOrigin(0);
+        this.add.image(x, y + r * 16, key).setOrigin(0).setDisplaySize(16, 16);
       }
     }
   }

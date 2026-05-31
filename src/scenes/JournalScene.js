@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import GameState from '../systems/GameState.js';
 import Audio from '../systems/AudioManager.js';
-import { COLORS, textStyle, drawPanel } from '../systems/Theme.js';
+import { COLORS, textStyle, drawPanel, uiCamera } from '../systems/Theme.js';
 import { VIEW_W, VIEW_H } from '../main.js';
 
 const REGION_TABS = [
@@ -20,6 +20,7 @@ export default class JournalScene extends Phaser.Scene {
   }
 
   create() {
+    uiCamera(this);
     this.entries = this.cache.json.get('journal').entries;
     // Default to the tab for the current region (fall back to first tab).
     this.activeRegion = REGION_TABS.some((t) => t.id === GameState.data.currentRegion)

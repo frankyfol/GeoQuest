@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import GameState from '../systems/GameState.js';
 import Audio from '../systems/AudioManager.js';
-import { COLORS, textStyle, drawPanel } from '../systems/Theme.js';
+import { COLORS, textStyle, drawPanel, uiCamera } from '../systems/Theme.js';
 import { VIEW_W, VIEW_H } from '../main.js';
 
 // Overlay settings menu, launchable from the Title screen and the World
@@ -16,6 +16,7 @@ export default class SettingsScene extends Phaser.Scene {
   }
 
   create() {
+    uiCamera(this);
     const cx = VIEW_W / 2;
     this.add.rectangle(0, 0, VIEW_W, VIEW_H, 0x000000, 0.8).setOrigin(0).setInteractive();
     drawPanel(this, cx - 110, 40, 220, 150);

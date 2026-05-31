@@ -3,7 +3,7 @@ import GameState from '../systems/GameState.js';
 import Audio from '../systems/AudioManager.js';
 import { buildMap, TILE_CODES } from '../systems/MapFactory.js';
 import { COLORS, FONT, textStyle } from '../systems/Theme.js';
-import { TILE, VIEW_W, VIEW_H } from '../main.js';
+import { TILE, GAME_W, GAME_H } from '../main.js';
 
 const FACING = {
   up: { dx: 0, dy: -1 },
@@ -121,22 +121,22 @@ export default class WorldScene extends Phaser.Scene {
 
       // Floating label above NPC.
       const label = this.add
-        .text(px, py - 12, trig.label || '', textStyle(6, COLORS.text))
+        .text(px, py - 40, trig.label || '', textStyle(16, COLORS.text))
         .setOrigin(0.5)
         .setDepth(6);
       label.setVisible(false);
 
-      // small check mark for cleared
+      // check mark for cleared encounters
       let check = null;
       if (cleared) {
-        check = this.add.text(px + 5, py - 11, '\u2713', textStyle(7, COLORS.good)).setOrigin(0.5).setDepth(7);
+        check = this.add.text(px + 22, py - 26, '\u2713', textStyle(20, COLORS.good)).setOrigin(0.5).setDepth(7);
       }
 
       this.triggerSprites.push({ trig, spr, label, check });
 
       // gentle bob for living NPCs/spirits
       if (trig.type !== 'door' && trig.sprite !== 'npc_sign') {
-        this.tweens.add({ targets: spr, y: py - 2, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+        this.tweens.add({ targets: spr, y: py - 8, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
       }
     });
   }
@@ -164,9 +164,9 @@ export default class WorldScene extends Phaser.Scene {
     this._ensureAnims();
     this.player = this.add.sprite(px, py, 'hero', `${this.facing}0`).setDepth(10);
 
-    // Companion droplet trailing behind.
-    this.companion = this.add.image(px - 10, py + 4, 'companion').setDepth(9);
-    this.tweens.add({ targets: this.companion, y: py + 1, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    // Companion droplet trailing behind (slightly smaller than the hero).
+    this.companion = this.add.image(px - 38, py + 14, 'companion').setScale(0.7).setDepth(9);
+    this.tweens.add({ targets: this.companion, y: py + 6, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
 
     GameState.data.player = { x, y, facing: this.facing };
   }
@@ -204,9 +204,9 @@ export default class WorldScene extends Phaser.Scene {
     this.hud = this.add.container(0, 0).setScrollFactor(0).setDepth(100);
 
     // Solid top bar (opaque so the map behind never bleeds through).
-    const bar = this.add.rectangle(0, 0, VIEW_W, 16, COLORS.panel, 1).setOrigin(0);
-    const barEdge = this.add.rectangle(0, 16, VIEW_W, 1, COLORS.border, 1).setOrigin(0);
-    const name = this.add.text(4, 4, this.regionDef ? this.regionDef.name : '', textStyle(7, COLORS.accent));
+    const bar = this.add.rectangle(0, 0, GAME_W, 64, COLORS.panel, 1).setOrigin(0);
+    const barEdge = this.add.rectangle(0, 64, GAME_W, 4, COLORS.border, 1).setOrigin(0);
+    const name = this.add.text(16, 16, this.regionDef ? this.regionDef.name : '', textStyle(28, COLORS.accent));
 
     this.hud.add([bar, barEdge, name]);
 
@@ -217,7 +217,7 @@ export default class WorldScene extends Phaser.Scene {
       { key: 'badge_tideguard', flag: 'tideguard' }
     ];
     badgeKeys.forEach((b, i) => {
-      const icon = this.add.image(VIEW_W - 12 - i * 16, 8, b.key).setScale(0.5);
+      const icon = this.add.image(GAME_W - 44 - i * 64, 32, b.key).setScale(1.6);
       icon.setAlpha(GameState.data.badges[b.flag] ? 1 : 0.25);
       this.hud.add(icon);
       b.icon = icon;
@@ -225,8 +225,8 @@ export default class WorldScene extends Phaser.Scene {
     this._badgeIcons = badgeKeys;
 
     // Bottom hint with its own solid strip for legibility over the map.
-    const hintStrip = this.add.rectangle(0, VIEW_H - 11, VIEW_W, 11, COLORS.panel, 0.92).setOrigin(0);
-    const hint = this.add.text(4, VIEW_H - 9, 'Move: Arrows/WASD   Act: SPACE   Journal: J', textStyle(5, COLORS.textDim));
+    const hintStrip = this.add.rectangle(0, GAME_H - 40, GAME_W, 40, COLORS.panel, 0.92).setOrigin(0);
+    const hint = this.add.text(16, GAME_H - 30, 'Move: Arrows/WASD    Act: SPACE    Journal: J    Pause: ESC', textStyle(18, COLORS.textDim));
     this.hud.add([hintStrip, hint]);
   }
 
@@ -262,14 +262,14 @@ export default class WorldScene extends Phaser.Scene {
     if (!isTouch) return;
 
     const mk = (x, y, label, onDown) => {
-      const btn = this.add.circle(x, y, 12, COLORS.panelLight, 0.7).setScrollFactor(0).setDepth(120).setStrokeStyle(2, COLORS.border).setInteractive({ useHandCursor: true });
-      const t = this.add.text(x, y, label, textStyle(8)).setOrigin(0.5).setScrollFactor(0).setDepth(121);
+      const btn = this.add.circle(x, y, 48, COLORS.panelLight, 0.7).setScrollFactor(0).setDepth(120).setStrokeStyle(4, COLORS.border).setInteractive({ useHandCursor: true });
+      const t = this.add.text(x, y, label, textStyle(28)).setOrigin(0.5).setScrollFactor(0).setDepth(121);
       btn.on('pointerdown', onDown);
       return { btn, t };
     };
 
-    const baseX = 28;
-    const baseY = VIEW_H - 44;
+    const baseX = 112;
+    const baseY = GAME_H - 168;
     this._dpadHeld = null;
     const dpad = (x, y, label, dir) => {
       const o = mk(x, y, label, () => {
@@ -279,13 +279,13 @@ export default class WorldScene extends Phaser.Scene {
       o.btn.on('pointerout', () => (this._dpadHeld = null));
       return o;
     };
-    dpad(baseX, baseY - 16, '\u25B2', 'up');
-    dpad(baseX, baseY + 16, '\u25BC', 'down');
-    dpad(baseX - 18, baseY, '\u25C0', 'left');
-    dpad(baseX + 18, baseY, '\u25B6', 'right');
+    dpad(baseX, baseY - 72, '\u25B2', 'up');
+    dpad(baseX, baseY + 72, '\u25BC', 'down');
+    dpad(baseX - 72, baseY, '\u25C0', 'left');
+    dpad(baseX + 72, baseY, '\u25B6', 'right');
 
-    mk(VIEW_W - 30, VIEW_H - 30, 'A', () => this._tryAction());
-    mk(VIEW_W - 30, VIEW_H - 58, 'J', () => this._openJournal());
+    mk(GAME_W - 120, GAME_H - 120, 'A', () => this._tryAction());
+    mk(GAME_W - 120, GAME_H - 232, 'J', () => this._openJournal());
   }
 
   // ---- movement ------------------------------------------------------
@@ -372,8 +372,8 @@ export default class WorldScene extends Phaser.Scene {
     const d = FACING[this.facing];
     this.tweens.add({
       targets: this.companion,
-      x: tx - d.dx * 10,
-      y: ty - d.dy * 10 + 2,
+      x: tx - d.dx * 38,
+      y: ty - d.dy * 38 + 8,
       duration: 160,
       ease: 'Sine.out'
     });

@@ -11,19 +11,26 @@ import SettingsScene from './scenes/SettingsScene.js';
 import EndScene from './scenes/EndScene.js';
 import GameState from './systems/GameState.js';
 
-// Logical resolution: a 16px tile grid, viewport of 20x15 tiles = 320x240,
-// scaled up x3 by Phaser's Scale Manager for a chunky retro look.
-export const TILE = 16;
+// Art uses a 64x64 pixel tile for plenty of detail. The game renders at an
+// internal resolution of 1280x960 (a 20x15 grid of 64px tiles) and is scaled
+// to fit the window by Phaser's Scale Manager.
+export const TILE = 64;
+export const GAME_W = 1280;
+export const GAME_H = 960;
+
+// UI scenes are authored against a compact 320x240 "design" space and then
+// rendered through a x4 camera zoom (UI_ZOOM) so they fill the 1280x960 frame.
+// This keeps all existing UI layouts/fonts unchanged at the higher resolution.
 export const VIEW_W = 320;
 export const VIEW_H = 240;
-export const ZOOM = 3;
+export const UI_ZOOM = 4;
 
 const config = {
   type: Phaser.AUTO,
   parent: 'game-root',
-  width: VIEW_W,
-  height: VIEW_H,
-  zoom: ZOOM,
+  width: GAME_W,
+  height: GAME_H,
+  zoom: 1,
   pixelArt: true,
   roundPixels: true,
   backgroundColor: '#0b1020',

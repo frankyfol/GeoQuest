@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import GameState from '../systems/GameState.js';
 import Audio from '../systems/AudioManager.js';
 import { checkAnswer } from '../systems/QuestionEngine.js';
-import { COLORS, textStyle, drawPanel } from '../systems/Theme.js';
+import { COLORS, textStyle, drawPanel, uiCamera } from '../systems/Theme.js';
 import { VIEW_W, VIEW_H } from '../main.js';
 
 // The quiz "battle" engine. You cannot lose: wrong answers show a hint and
@@ -17,6 +17,7 @@ export default class EncounterScene extends Phaser.Scene {
   }
 
   create() {
+    uiCamera(this);
     const qdata = this.cache.json.get('questions');
     this.regions = this.cache.json.get('regions').regions;
     this.encounter = qdata.encounters.find((e) => e.id === this.encounterId);
@@ -66,11 +67,11 @@ export default class EncounterScene extends Phaser.Scene {
 
     // Guardian sprite (challenge) on the right.
     const isBoss = this.encounter.isBoss;
-    this.guardian = this.add.image(255, 70, isBoss ? 'npc_boss' : 'npc_spirit').setScale(isBoss ? 4 : 3);
+    this.guardian = this.add.image(255, 70, isBoss ? 'npc_boss' : 'npc_spirit').setScale(isBoss ? 1.1 : 0.85);
     this.tweens.add({ targets: this.guardian, y: 66, duration: 800, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
 
     // Companion on the left.
-    this.companion = this.add.image(55, 96, 'companion').setScale(2.5);
+    this.companion = this.add.image(55, 96, 'companion').setScale(0.65);
     this.tweens.add({ targets: this.companion, y: 92, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
     this.levelText = this.add.text(8, 100, `Lv ${GameState.data.companionLevel}  XP ${GameState.data.companionXP}`, textStyle(6, COLORS.text));
 

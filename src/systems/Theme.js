@@ -1,7 +1,15 @@
 // Theme.js
 // Shared visual constants and small UI helpers (retro font, panels, buttons).
+import { UI_ZOOM, VIEW_W, VIEW_H } from '../main.js';
 
 export const FONT = '"Press Start 2P", monospace';
+
+// UI scenes are authored in a compact 320x240 design space; this zooms the
+// scene camera so that space fills the 1280x960 frame (crisp x4 scaling).
+export function uiCamera(scene) {
+  scene.cameras.main.setZoom(UI_ZOOM);
+  scene.cameras.main.centerOn(VIEW_W / 2, VIEW_H / 2);
+}
 
 export const COLORS = {
   bg: 0x0b1020,

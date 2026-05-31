@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import GameState from '../systems/GameState.js';
 import Audio from '../systems/AudioManager.js';
 import { getDialogue, textSpeedToDelay } from '../systems/DialogueManager.js';
-import { COLORS, textStyle, drawPanel } from '../systems/Theme.js';
+import { COLORS, textStyle, drawPanel, uiCamera } from '../systems/Theme.js';
 import { VIEW_W, VIEW_H } from '../main.js';
 
 // Overlay scene shown on top of a paused WorldScene. Types out dialogue
@@ -18,6 +18,7 @@ export default class DialogueScene extends Phaser.Scene {
   }
 
   create() {
+    uiCamera(this);
     const dlg = getDialogue(this, this.dialogueId);
     this.lines = dlg ? dlg.lines : ['...'];
     this.speaker = dlg ? dlg.speaker : '';
