@@ -273,9 +273,14 @@ World → End              (when all three badges are earned)
   `save() / load() / hasSave() / newGame()` and helpers for journal state,
   companion XP, badges and region unlocking.
 - `QuestionEngine.js` — pure `checkAnswer()` grading for all five question types.
-- `MapFactory.js` — hand-authored maps generated in code (tiles, collision,
-  triggers and spawn) for all three regions, using coloured-rectangle
-  placeholder tiles so the game runs with **zero binary art assets**.
+- `Tileset.js` — generates all in-game art at runtime as crisp 16×16 pixel-art:
+  textured tiles (grass, path, water, sand, mud, trees, rocks, flowers) and
+  outlined chibi character sprites (an animated walking hero, NPC rangers and
+  villagers, spirit orbs, a boss guardian, a signpost, a stone gate and the
+  droplet companion).
+- `MapFactory.js` — hand-authored maps generated in code (tile grids, collision,
+  triggers, decorative ponds and spawn) for all three regions. `WorldScene` bakes
+  them into a single `RenderTexture`.
 - `AudioManager.js` — music and SFX synthesised at runtime with the Web Audio
   API, so there are **no audio files** to ship. Respects the sound setting.
 - `DialogueManager.js` — dialogue lookup + text-speed timing.
@@ -283,14 +288,15 @@ World → End              (when all three badges are earned)
 
 **Assets**
 
+- The game ships with **zero binary art or audio assets** — tiles, characters,
+  music and SFX are all generated procedurally at runtime. You can swap in real
+  tilesets/sprites later **without changing any game logic**.
 - **Field Journal icons** are clean SVGs under `public/assets/sprites/journal/`,
   one per concept, referenced by each `journal.json` entry's `icon` field. They
   are colour-coded by region (blue = water, green = rainforest, teal = mangroves,
   grey = general) and loaded with smooth (LINEAR) filtering. Regenerate them with
   `node tools/gen-journal-icons.mjs`.
 - The **retro font** is *Press Start 2P* (loaded from Google Fonts).
-- All other visuals are generated placeholder shapes — swap in real
-  tilesets/sprites later **without changing any game logic**.
 
 ---
 
@@ -312,7 +318,7 @@ geoquest/
     ├── scenes/                  # Boot, Preload, Title, World, Encounter,
     │                            #   Dialogue, Journal, Settings, End
     └── systems/                 # GameState, QuestionEngine, DialogueManager,
-                                 #   AudioManager, MapFactory, Theme
+                                 #   AudioManager, MapFactory, Tileset, Theme
 ```
 
 ---

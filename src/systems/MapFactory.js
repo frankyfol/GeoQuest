@@ -65,6 +65,21 @@ function carvePath(tiles, points, code = TILE_CODES.PATH) {
   }
 }
 
+// Add a small pond: a water core with a sandy shoreline rim, only overwriting
+// plain grass so it never blocks a path or NPC.
+function addPond(tiles, x0, y0, w, h) {
+  for (let y = y0 - 1; y <= y0 + h; y++) {
+    for (let x = x0 - 1; x <= x0 + w; x++) {
+      if (tiles[y] && tiles[y][x] === TILE_CODES.GRASS) tiles[y][x] = TILE_CODES.SAND;
+    }
+  }
+  for (let y = y0; y < y0 + h; y++) {
+    for (let x = x0; x < x0 + w; x++) {
+      if (tiles[y] && tiles[y][x] !== undefined) tiles[y][x] = TILE_CODES.WATER;
+    }
+  }
+}
+
 function borderTrees(tiles, code = TILE_CODES.TREE) {
   const h = tiles.length;
   const w = tiles[0].length;
@@ -121,6 +136,9 @@ function hydroValley() {
   decos.forEach(([x, y, c]) => {
     tiles[y][x] = c;
   });
+
+  // A calm decorative pond with a sandy shore.
+  addPond(tiles, 15, 11, 3, 2);
 
   const triggers = [
     { x: 4, y: 11, type: 'dialogue', id: 'hv_intro_ranger', activate: 'talk', sprite: 'npc_ranger', label: 'Ranger May' },

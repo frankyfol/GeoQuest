@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { COLORS, FONT } from '../systems/Theme.js';
 import { VIEW_W, VIEW_H } from '../main.js';
+import { generateTiles, generateCharacters } from '../systems/Tileset.js';
 
 // PreloadScene: loads all JSON data, generates placeholder textures, and
 // waits for the retro web font, all behind a simple loading bar.
@@ -135,48 +136,10 @@ export default class PreloadScene extends Phaser.Scene {
       g.lineBetween(24, 27, 24, 24);
     });
 
-    // Player: 16x16 with a lighter "face" block showing facing direction.
-    make('player', 16, 16, (g) => {
-      g.fillStyle(0xffd166, 1);
-      g.fillRect(2, 2, 12, 12);
-      g.fillStyle(0x6b4f1d, 1);
-      g.fillRect(5, 5, 6, 4); // face indicator (drawn facing up by default)
-    });
-
-    // Companion droplet sprite.
-    make('companion', 16, 16, (g) => {
-      g.fillStyle(0x4fc3f7, 1);
-      g.fillCircle(8, 9, 6);
-      g.fillTriangle(8, 0, 4, 6, 12, 6);
-      g.fillStyle(0xffffff, 0.8);
-      g.fillCircle(6, 7, 1.5);
-    });
-
-    // Generic NPC / spirit / guardian markers (coloured tiles).
-    make('npc_ranger', 16, 16, (g) => {
-      g.fillStyle(0xef476f, 1);
-      g.fillRect(2, 2, 12, 12);
-    });
-    make('npc_spirit', 16, 16, (g) => {
-      g.fillStyle(0x9b8cff, 1);
-      g.fillRect(2, 2, 12, 12);
-    });
-    make('npc_boss', 16, 16, (g) => {
-      g.fillStyle(0xff6b35, 1);
-      g.fillRect(1, 1, 14, 14);
-    });
-    make('npc_sign', 16, 16, (g) => {
-      g.fillStyle(0x8d6e63, 1);
-      g.fillRect(3, 2, 10, 8);
-      g.fillStyle(0x5d4037, 1);
-      g.fillRect(7, 10, 2, 5);
-    });
-    make('door', 16, 16, (g) => {
-      g.fillStyle(0x6d4c41, 1);
-      g.fillRect(2, 1, 12, 15);
-      g.fillStyle(0x3e2723, 1);
-      g.fillRect(5, 4, 6, 11);
-    });
+    // Detailed pixel-art tiles + character sprites (player, NPCs, spirits,
+    // boss, sign, gate, companion). See src/systems/Tileset.js.
+    generateTiles(this);
+    generateCharacters(this);
 
     // Badge icons.
     const badge = (key, color) =>

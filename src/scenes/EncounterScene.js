@@ -30,14 +30,14 @@ export default class EncounterScene extends Phaser.Scene {
     this.qIndex = 0;
     this.answeredCount = 0;
     this.awardedXP = new Set();
+    // Generic widget tracking so we can clear between states. Must exist
+    // BEFORE _showIntro() so the intro text is tracked and later cleared.
+    this.widgets = [];
 
     this._buildScaffold();
     this._showIntro();
 
     Audio.playMusic('encounter');
-
-    // Generic widget tracking so we can clear between states.
-    this.widgets = [];
 
     // Number keys select options where relevant.
     this.input.keyboard.on('keydown', (e) => {
@@ -162,12 +162,18 @@ export default class EncounterScene extends Phaser.Scene {
 
   // ----- choice-style (mcq / truefalse) ------------------------------
   _renderChoices(options, onPick) {
-    const startY = this.panel.y + 38;
-    const rowH = 17;
+    const startY = this.panel.y + 36;
+    const rowH = 18;
     options.forEach((opt, i) => {
       const y = startY + i * rowH;
-      const box = this.add.rectangle(this.panel.x + 8, y, this.panel.w - 16, rowH - 3, COLORS.panelLight, 1).setOrigin(0).setStrokeStyle(1, COLORS.border).setInteractive({ useHandCursor: true });
-      const t = this.add.text(this.panel.x + 14, y + 3, `${i + 1}. ${opt}`, textStyle(7)).setOrigin(0);
+      const box = this.add.rectangle(this.panel.x + 8, y, this.panel.w - 16, rowH - 2, COLORS.panelLight, 1).setOrigin(0).setStrokeStyle(1, COLORS.border).setInteractive({ useHandCursor: true });
+      const t = this.add
+        .text(this.panel.x + 14, y + 3, `${i + 1}. ${opt}`, {
+          ...textStyle(6),
+          wordWrap: { width: this.panel.w - 28 },
+          lineSpacing: 1
+        })
+        .setOrigin(0);
       box.on('pointerover', () => box.setFillStyle(0x3a5088));
       box.on('pointerout', () => box.setFillStyle(COLORS.panelLight));
       box.on('pointerdown', () => {
@@ -193,7 +199,7 @@ export default class EncounterScene extends Phaser.Scene {
     q.options.forEach((opt, i) => {
       const y = startY + i * rowH;
       const box = this.add.rectangle(this.panel.x + 8, y, this.panel.w - 16, rowH - 3, COLORS.panelLight, 1).setOrigin(0).setStrokeStyle(1, COLORS.border).setInteractive({ useHandCursor: true });
-      const t = this.add.text(this.panel.x + 14, y + 2, `[ ] ${i + 1}. ${opt}`, textStyle(7)).setOrigin(0);
+      const t = this.add.text(this.panel.x + 14, y + 2, `[ ] ${i + 1}. ${opt}`, { ...textStyle(6), wordWrap: { width: this.panel.w - 30 } }).setOrigin(0);
       const toggle = () => {
         if (selected.has(i)) {
           selected.delete(i);
