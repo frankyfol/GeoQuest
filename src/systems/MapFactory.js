@@ -1,9 +1,13 @@
-// MapFactory.js
-// Hand-authored, code-generated maps for each region (no Tiled files needed).
-// Each map returns: { width, height, tiles[][], collision Set, triggers[], spawn }.
-//
-// Tile codes: 0 grass, 1 path/dirt, 2 water (block), 3 tree (block),
-//             4 rock (block), 5 sand, 6 mud (block-ish water look)
+// MapFactory.js — organic, hand-tuned region layouts (no rectangular boxes).
+import {
+  applyOrganicBorder,
+  stampBlob,
+  ringBlob,
+  carveOrganicPath,
+  clearCorridor,
+  paintRiver,
+  scatterClusters
+} from './MapTerrain.js';
 
 export const TILE_CODES = {
   GRASS: 0,
@@ -25,7 +29,8 @@ export const TILE_COLORS = {
   6: 0x6b5436
 };
 
-const BLOCKING = new Set([2, 3, 4, 6]);
+const T = TILE_CODES;
+const BLOCKING = new Set([T.WATER, T.TREE, T.ROCK, T.MUD]);
 
 function makeGrid(w, h, fill) {
   const grid = [];
@@ -48,184 +53,203 @@ function buildCollision(tiles, extraBlocked) {
   return set;
 }
 
-// Carve a horizontal-then-vertical path between waypoints.
-function carvePath(tiles, points, code = TILE_CODES.PATH) {
-  for (let i = 0; i < points.length - 1; i++) {
-    let [x0, y0] = points[i];
-    const [x1, y1] = points[i + 1];
-    while (x0 !== x1) {
-      tiles[y0][x0] = code;
-      x0 += x1 > x0 ? 1 : -1;
-    }
-    while (y0 !== y1) {
-      tiles[y0][x0] = code;
-      y0 += y1 > y0 ? 1 : -1;
-    }
-    tiles[y1][x1] = code;
-  }
-}
-
-function borderTrees(tiles, code = TILE_CODES.TREE) {
-  const h = tiles.length;
-  const w = tiles[0].length;
-  for (let x = 0; x < w; x++) {
-    tiles[0][x] = code;
-    tiles[h - 1][x] = code;
-  }
-  for (let y = 0; y < h; y++) {
-    tiles[y][0] = code;
-    tiles[y][w - 1] = code;
-  }
-}
-
-// ---- Hydro Valley --------------------------------------------------
-function hydroValley() {
-  const w = 26;
-  const h = 16;
-  const tiles = makeGrid(w, h, TILE_CODES.GRASS);
-  borderTrees(tiles);
-
-  // A river along the bottom for flavour.
-  for (let x = 1; x < w - 1; x++) {
-    tiles[h - 2][x] = TILE_CODES.WATER;
-  }
-  // sandy bank above the river
-  for (let x = 1; x < w - 1; x++) {
-    tiles[h - 3][x] = TILE_CODES.SAND;
-  }
-
-  // Winding main path the player follows.
-  const path = [
-    [3, 12],
-    [3, 7],
-    [7, 7],
-    [7, 4],
-    [12, 4],
-    [12, 9],
-    [17, 9],
-    [17, 4],
-    [22, 4],
-    [22, 11]
-  ];
-  carvePath(tiles, path);
-
-  // Scattered decorative trees/rocks (non-blocking grass already).
-  const decos = [
-    [5, 10, TILE_CODES.TREE],
-    [9, 11, TILE_CODES.TREE],
-    [14, 6, TILE_CODES.ROCK],
-    [19, 11, TILE_CODES.TREE],
-    [10, 2, TILE_CODES.TREE],
-    [20, 7, TILE_CODES.ROCK]
-  ];
-  decos.forEach(([x, y, c]) => {
-    tiles[y][x] = c;
-  });
-
-  const triggers = [
-    { x: 4, y: 11, type: 'dialogue', id: 'hv_intro_ranger', activate: 'talk', sprite: 'npc_ranger', label: 'Ranger May' },
-    { x: 2, y: 9, type: 'dialogue', id: 'hv_sign_path', activate: 'talk', sprite: 'npc_sign', label: 'Sign' },
-    { x: 6, y: 7, type: 'encounter', id: 'hv_evaporation', activate: 'talk', sprite: 'npc_spirit', label: 'Cloud Spirit' },
-    { x: 7, y: 3, type: 'encounter', id: 'hv_condensation', activate: 'talk', sprite: 'npc_spirit', label: 'Cloud Spirit' },
-    { x: 13, y: 4, type: 'encounter', id: 'hv_precipitation', activate: 'talk', sprite: 'npc_spirit', label: 'Cloud Spirit' },
-    { x: 12, y: 10, type: 'encounter', id: 'hv_infiltration', activate: 'talk', sprite: 'npc_spirit', label: 'Earth Spirit' },
-    { x: 18, y: 9, type: 'encounter', id: 'hv_runoff', activate: 'talk', sprite: 'npc_spirit', label: 'River Spirit' },
-    { x: 23, y: 4, type: 'encounter', id: 'hv_boss_flood', activate: 'talk', sprite: 'npc_boss', label: 'Floodmaster' },
-    { x: 22, y: 12, type: 'door', id: 'hv_door_locked', target: 'verdant_canopy', activate: 'talk', sprite: 'door', label: 'Gate' }
-  ];
-
-  // Spawn the player on the path near the start.
-  const spawn = { x: 3, y: 12, facing: 'up' };
-
-  return finalize(w, h, tiles, triggers, spawn);
-}
-
-// ---- Verdant Canopy ------------------------------------------------
-function verdantCanopy() {
-  const w = 24;
-  const h = 16;
-  const tiles = makeGrid(w, h, TILE_CODES.GRASS);
-  borderTrees(tiles);
-
-  // Dense forest patches.
-  const forest = [
-    [4, 4], [4, 5], [5, 4], [9, 6], [9, 7], [14, 4], [15, 4],
-    [18, 8], [6, 11], [11, 11], [16, 11], [20, 5]
-  ];
-  forest.forEach(([x, y]) => (tiles[y][x] = TILE_CODES.TREE));
-
-  const path = [
-    [3, 12],
-    [3, 8],
-    [8, 8],
-    [8, 4],
-    [13, 4],
-    [13, 9],
-    [19, 9],
-    [19, 12]
-  ];
-  carvePath(tiles, path);
-
-  const triggers = [
-    { x: 4, y: 11, type: 'dialogue', id: 'vc_intro_ranger', activate: 'talk', sprite: 'npc_ranger', label: 'Ranger Tan' },
-    { x: 8, y: 5, type: 'encounter', id: 'vc_structure', activate: 'talk', sprite: 'npc_spirit', label: 'Forest Spirit' },
-    { x: 14, y: 4, type: 'encounter', id: 'vc_adaptations', activate: 'talk', sprite: 'npc_spirit', label: 'Forest Spirit' },
-    { x: 13, y: 8, type: 'encounter', id: 'vc_boss_deforestation', activate: 'talk', sprite: 'npc_boss', label: 'Clearcutter' },
-    { x: 19, y: 13, type: 'door', id: 'vc_door_locked', target: 'tidewood_mangroves', activate: 'talk', sprite: 'door', label: 'Gate' },
-    { x: 2, y: 13, type: 'door', id: null, target: 'hydro_valley', activate: 'talk', sprite: 'door', label: 'Back' }
-  ];
-
-  const spawn = { x: 3, y: 12, facing: 'up' };
-  return finalize(w, h, tiles, triggers, spawn);
-}
-
-// ---- Tidewood Mangroves --------------------------------------------
-function tidewoodMangroves() {
-  const w = 24;
-  const h = 16;
-  const tiles = makeGrid(w, h, TILE_CODES.SAND);
-  borderTrees(tiles);
-
-  // Water and mud around the edges (the tidal coast).
-  for (let x = 1; x < w - 1; x++) {
-    tiles[h - 2][x] = TILE_CODES.WATER;
-    tiles[h - 3][x] = TILE_CODES.MUD;
-  }
-  const muds = [[5, 5], [6, 5], [10, 7], [15, 6], [16, 6], [19, 9], [4, 9]];
-  muds.forEach(([x, y]) => (tiles[y][x] = TILE_CODES.MUD));
-
-  const path = [
-    [3, 11],
-    [3, 7],
-    [8, 7],
-    [8, 4],
-    [13, 4],
-    [13, 9],
-    [18, 9],
-    [18, 5]
-  ];
-  carvePath(tiles, path);
-
-  const triggers = [
-    { x: 4, y: 10, type: 'dialogue', id: 'tm_intro_ranger', activate: 'talk', sprite: 'npc_ranger', label: 'Ranger Siti' },
-    { x: 8, y: 5, type: 'encounter', id: 'tm_adaptations', activate: 'talk', sprite: 'npc_spirit', label: 'Mangrove Spirit' },
-    { x: 13, y: 5, type: 'encounter', id: 'tm_value', activate: 'talk', sprite: 'npc_spirit', label: 'Villager' },
-    { x: 18, y: 6, type: 'encounter', id: 'tm_boss_storm', activate: 'talk', sprite: 'npc_boss', label: 'Storm Surge' },
-    { x: 2, y: 12, type: 'door', id: null, target: 'verdant_canopy', activate: 'talk', sprite: 'door', label: 'Back' }
-  ];
-
-  const spawn = { x: 3, y: 11, facing: 'up' };
-  return finalize(w, h, tiles, triggers, spawn);
-}
-
 function finalize(w, h, tiles, triggers, spawn) {
-  // Trigger tiles themselves block walking (you talk from an adjacent tile),
-  // except step triggers which must be walkable.
   const extraBlocked = triggers
     .filter((t) => t.activate !== 'step')
     .map((t) => `${t.x},${t.y}`);
   const collision = buildCollision(tiles, extraBlocked);
   return { width: w, height: h, tiles, collision, triggers, spawn };
+}
+
+// ---- Hydro Valley --------------------------------------------------
+function hydroValley() {
+  const w = 34;
+  const h = 22;
+  const tiles = makeGrid(w, h, T.GRASS);
+  const seed = 11;
+
+  applyOrganicBorder(tiles, seed, 0.1);
+
+  // Sandy cove + curving river to the sea (bottom-left).
+  stampBlob(tiles, 7, h - 4, 5.5, T.SAND, seed + 1);
+  paintRiver(
+    tiles,
+    [
+      [5, h - 3],
+      [9, h - 4],
+      [13, h - 3],
+      [16, h - 5],
+      [20, h - 4],
+      [24, h - 6]
+    ],
+    2,
+    seed + 2
+  );
+
+  // Central pond with beach ring.
+  stampBlob(tiles, 23, 9, 3.2, T.WATER, seed + 3);
+  ringBlob(tiles, 23, 9, 3.4, 5.2, T.SAND, seed + 3);
+
+  scatterClusters(
+    tiles,
+    [
+      { cx: 8, cy: 5, radius: 4, density: 0.62 },
+      { cx: 27, cy: 5, radius: 3.5, density: 0.58 },
+      { cx: 29, cy: 14, radius: 3, density: 0.5 },
+      { cx: 12, cy: 15, radius: 2.5, density: 0.45 }
+    ],
+    seed + 4
+  );
+
+  const route = [
+    [6, 19],
+    [6, 16],
+    [9, 15],
+    [12, 13],
+    [11, 10],
+    [14, 8],
+    [17, 9],
+    [21, 10],
+    [24, 9],
+    [27, 7],
+    [29, 11],
+    [30, 16]
+  ];
+  carveOrganicPath(tiles, route, 2.2, T.PATH);
+  clearCorridor(tiles, route, 2.4);
+
+  const triggers = [
+    { x: 7, y: 17, type: 'dialogue', id: 'hv_intro_ranger', activate: 'talk', sprite: 'npc_ranger', label: 'Ranger May' },
+    { x: 5, y: 13, type: 'dialogue', id: 'hv_sign_path', activate: 'talk', sprite: 'npc_sign', label: 'Sign' },
+    { x: 10, y: 14, type: 'encounter', id: 'hv_evaporation', activate: 'talk', sprite: 'npc_spirit', label: 'Cloud Spirit' },
+    { x: 14, y: 7, type: 'encounter', id: 'hv_condensation', activate: 'talk', sprite: 'npc_spirit', label: 'Cloud Spirit' },
+    { x: 18, y: 8, type: 'encounter', id: 'hv_precipitation', activate: 'talk', sprite: 'npc_spirit', label: 'Cloud Spirit' },
+    { x: 22, y: 10, type: 'encounter', id: 'hv_infiltration', activate: 'talk', sprite: 'npc_spirit', label: 'Earth Spirit' },
+    { x: 25, y: 9, type: 'encounter', id: 'hv_runoff', activate: 'talk', sprite: 'npc_spirit', label: 'River Spirit' },
+    { x: 28, y: 7, type: 'encounter', id: 'hv_boss_flood', activate: 'talk', sprite: 'npc_boss', label: 'Floodmaster' },
+    { x: 30, y: 15, type: 'door', id: 'hv_door_locked', target: 'verdant_canopy', activate: 'talk', sprite: 'door', label: 'Gate' }
+  ];
+
+  const spawn = { x: 6, y: 19, facing: 'up' };
+  return finalize(w, h, tiles, triggers, spawn);
+}
+
+// ---- Verdant Canopy ------------------------------------------------
+function verdantCanopy() {
+  const w = 32;
+  const h = 22;
+  const tiles = makeGrid(w, h, T.GRASS);
+  const seed = 22;
+
+  applyOrganicBorder(tiles, seed, 0.08);
+
+  // Misty pool + fern grove clusters.
+  stampBlob(tiles, 20, 11, 2.8, T.WATER, seed + 1);
+  ringBlob(tiles, 20, 11, 3, 4.5, T.MUD, seed + 1);
+
+  scatterClusters(
+    tiles,
+    [
+      { cx: 9, cy: 6, radius: 5, density: 0.7 },
+      { cx: 16, cy: 4, radius: 4, density: 0.65 },
+      { cx: 24, cy: 8, radius: 4.5, density: 0.68 },
+      { cx: 11, cy: 14, radius: 3.5, density: 0.6 },
+      { cx: 26, cy: 15, radius: 3, density: 0.55 }
+    ],
+    seed + 2
+  );
+
+  const route = [
+    [5, 19],
+    [5, 15],
+    [8, 14],
+    [11, 11],
+    [10, 8],
+    [14, 6],
+    [18, 7],
+    [22, 9],
+    [25, 12],
+    [27, 17]
+  ];
+  carveOrganicPath(tiles, route, 2, T.PATH);
+  clearCorridor(tiles, route, 2.3);
+
+  const triggers = [
+    { x: 6, y: 17, type: 'dialogue', id: 'vc_intro_ranger', activate: 'talk', sprite: 'npc_ranger', label: 'Ranger Tan' },
+    { x: 11, y: 10, type: 'encounter', id: 'vc_structure', activate: 'talk', sprite: 'npc_spirit', label: 'Forest Spirit' },
+    { x: 15, y: 6, type: 'encounter', id: 'vc_adaptations', activate: 'talk', sprite: 'npc_spirit', label: 'Forest Spirit' },
+    { x: 23, y: 9, type: 'encounter', id: 'vc_boss_deforestation', activate: 'talk', sprite: 'npc_boss', label: 'Clearcutter' },
+    { x: 27, y: 16, type: 'door', id: 'vc_door_locked', target: 'tidewood_mangroves', activate: 'talk', sprite: 'door', label: 'Gate' },
+    { x: 4, y: 19, type: 'door', id: null, target: 'hydro_valley', activate: 'talk', sprite: 'door', label: 'Back' }
+  ];
+
+  const spawn = { x: 5, y: 19, facing: 'up' };
+  return finalize(w, h, tiles, triggers, spawn);
+}
+
+// ---- Tidewood Mangroves --------------------------------------------
+function tidewoodMangroves() {
+  const w = 32;
+  const h = 22;
+  const tiles = makeGrid(w, h, T.SAND);
+  const seed = 33;
+
+  applyOrganicBorder(tiles, seed, 0.09);
+
+  // Tidal lagoon (irregular, not a straight strip).
+  stampBlob(tiles, 10, h - 4, 6, T.WATER, seed + 1);
+  stampBlob(tiles, 22, h - 5, 4.5, T.WATER, seed + 2);
+  ringBlob(tiles, 10, h - 4, 6.2, 8, T.MUD, seed + 1);
+  paintRiver(
+    tiles,
+    [
+      [6, h - 5],
+      [14, h - 6],
+      [20, h - 5],
+      [26, h - 7]
+    ],
+    1.8,
+    seed + 3
+  );
+
+  // Inland grass clearing.
+  stampBlob(tiles, 18, 10, 5, T.GRASS, seed + 4);
+  stampBlob(tiles, 12, 8, 3.5, T.GRASS, seed + 5);
+
+  scatterClusters(
+    tiles,
+    [
+      { cx: 8, cy: 6, radius: 3, density: 0.5 },
+      { cx: 25, cy: 7, radius: 3.5, density: 0.52 },
+      { cx: 15, cy: 16, radius: 2.5, density: 0.48 }
+    ],
+    seed + 6
+  );
+
+  const route = [
+    [5, 18],
+    [5, 14],
+    [9, 13],
+    [13, 11],
+    [16, 9],
+    [19, 7],
+    [23, 8],
+    [26, 11],
+    [28, 15]
+  ];
+  carveOrganicPath(tiles, route, 2, T.PATH);
+  clearCorridor(tiles, route, 2.3);
+
+  const triggers = [
+    { x: 6, y: 16, type: 'dialogue', id: 'tm_intro_ranger', activate: 'talk', sprite: 'npc_ranger', label: 'Ranger Siti' },
+    { x: 13, y: 10, type: 'encounter', id: 'tm_adaptations', activate: 'talk', sprite: 'npc_spirit', label: 'Mangrove Spirit' },
+    { x: 18, y: 8, type: 'encounter', id: 'tm_value', activate: 'talk', sprite: 'npc_spirit', label: 'Villager' },
+    { x: 25, y: 9, type: 'encounter', id: 'tm_boss_storm', activate: 'talk', sprite: 'npc_boss', label: 'Storm Surge' },
+    { x: 4, y: 18, type: 'door', id: null, target: 'verdant_canopy', activate: 'talk', sprite: 'door', label: 'Back' }
+  ];
+
+  const spawn = { x: 5, y: 18, facing: 'up' };
+  return finalize(w, h, tiles, triggers, spawn);
 }
 
 const BUILDERS = {
