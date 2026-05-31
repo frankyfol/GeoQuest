@@ -60,6 +60,7 @@ export default class PreloadScene extends Phaser.Scene {
 
   async create() {
     this._generatePlaceholderTextures();
+    await this._loadJournalIcons();
 
     // Wait for the web font so retro text renders correctly from the start.
     try {
@@ -74,6 +75,39 @@ export default class PreloadScene extends Phaser.Scene {
     this.scene.start('Title');
   }
 
+  // Load the Field Journal concept icons (SVGs) listed in journal.json as
+  // textures keyed `jicon_<id>`. Uses LINEAR filtering so they scale smoothly
+  // (the global pixelArt setting otherwise applies NEAREST).
+  _loadJournalIcons() {
+    return new Promise((resolve) => {
+      const journal = this.cache.json.get('journal');
+      if (!journal || !journal.entries) return resolve();
+
+      let queued = 0;
+      journal.entries.forEach((e) => {
+        if (!e.icon) return;
+        const key = `jicon_${e.id}`;
+        if (this.textures.exists(key)) return;
+        this.load.svg(key, e.icon, { width: 48, height: 48 });
+        queued++;
+      });
+      if (queued === 0) return resolve();
+
+      this.load.once('complete', () => {
+        journal.entries.forEach((e) => {
+          const key = `jicon_${e.id}`;
+          if (this.textures.exists(key)) {
+            this.textures.get(key).setFilter(Phaser.Textures.FilterMode.LINEAR);
+          }
+        });
+        resolve();
+      });
+      // Tolerate a missing icon file without blocking the whole game.
+      this.load.once('loaderror', () => {});
+      this.load.start();
+    });
+  }
+
   // Build all placeholder coloured-rectangle textures used by the game.
   _generatePlaceholderTextures() {
     const make = (key, w, h, draw) => {
@@ -83,6 +117,23 @@ export default class PreloadScene extends Phaser.Scene {
       g.generateTexture(key, w, h);
       g.destroy();
     };
+
+    // Placeholder "silhouette" icon for unseen journal entries (hides the
+    // real concept icon). Renderer-independent — no tinting required.
+    make('jicon_unknown', 48, 48, (g) => {
+      g.fillStyle(0x141b2e, 1);
+      g.fillRoundedRect(3, 3, 42, 42, 11);
+      g.lineStyle(3, 0x3a4a66, 1);
+      g.strokeRoundedRect(4, 4, 40, 40, 10);
+      // a faint "?" suggestion: dot + curve marker
+      g.fillStyle(0x3a4a66, 1);
+      g.fillCircle(24, 33, 2.5);
+      g.lineStyle(3, 0x3a4a66, 1);
+      g.beginPath();
+      g.arc(24, 21, 6, Phaser.Math.DegToRad(150), Phaser.Math.DegToRad(20), false);
+      g.strokePath();
+      g.lineBetween(24, 27, 24, 24);
+    });
 
     // Player: 16x16 with a lighter "face" block showing facing direction.
     make('player', 16, 16, (g) => {

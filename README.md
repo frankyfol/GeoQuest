@@ -67,6 +67,12 @@ submit. Sequence/match questions are tap-to-order / tap-to-pair.
 - **Maps** are hand-authored in code (`src/systems/MapFactory.js`) using
   coloured-rectangle placeholder tiles, so the game runs with **zero art
   assets**. Swap in real tilesets/sprites later without changing the logic.
+- **Field Journal icons** are clean SVGs under
+  `public/assets/sprites/journal/` — one per concept, referenced by each
+  `journal.json` entry's `icon` field. They are colour-coded by region and
+  loaded with smooth (LINEAR) filtering. Unseen entries render a neutral
+  placeholder silhouette so discovering them stays part of the fun. The icons
+  are reproducible via `node tools/gen-journal-icons.mjs`.
 - **Audio** is generated procedurally with the Web Audio API
   (`src/systems/AudioManager.js`) — no audio files required. Toggle in Settings.
 
@@ -78,6 +84,8 @@ geoquest/
 ├── package.json
 ├── vite.config.js
 ├── public/assets/data/        # questions, regions, journal, dialogue (JSON)
+├── public/assets/sprites/journal/  # 29 SVG concept icons (one per journal entry)
+├── tools/gen-journal-icons.mjs     # regenerates the journal icons
 └── src/
     ├── main.js                # Phaser config + scene registration
     ├── scenes/                # Boot, Preload, Title, World, Encounter,

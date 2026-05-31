@@ -9,6 +9,7 @@ import JournalScene from './scenes/JournalScene.js';
 import DialogueScene from './scenes/DialogueScene.js';
 import SettingsScene from './scenes/SettingsScene.js';
 import EndScene from './scenes/EndScene.js';
+import GameState from './systems/GameState.js';
 
 // Logical resolution: a 16px tile grid, viewport of 20x15 tiles = 320x240,
 // scaled up x3 by Phaser's Scale Manager for a chunky retro look.
@@ -51,6 +52,7 @@ const config = {
 const game = new Phaser.Game(config);
 // Expose for debugging / automated smoke tests.
 window.__GAME = game;
+window.__GS = GameState;
 game.events.once('ready', () => {
   const fallback = document.getElementById('loading-fallback');
   if (fallback) fallback.remove();

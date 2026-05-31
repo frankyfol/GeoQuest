@@ -1,93 +1,207 @@
 {
   "entries": [
-    { "id": "evaporation", "region": "hydro_valley", "title": "Evaporation",
-      "definition": "Liquid water turns into water vapour when heated by the sun.",
-      "color": "#4fc3f7" },
-    { "id": "transpiration", "region": "hydro_valley", "title": "Transpiration",
-      "definition": "Plants release water vapour into the air through pores in their leaves.",
-      "color": "#66bb6a" },
-    { "id": "condensation", "region": "hydro_valley", "title": "Condensation",
-      "definition": "Cooling water vapour turns back into tiny droplets that form clouds.",
-      "color": "#90caf9" },
-    { "id": "precipitation", "region": "hydro_valley", "title": "Precipitation",
-      "definition": "Cloud droplets grow heavy and fall as rain, snow or hail.",
-      "color": "#42a5f5" },
-    { "id": "infiltration", "region": "hydro_valley", "title": "Infiltration",
+    {
+      "id": "evaporation",
+      "region": "hydro_valley",
+      "title": "Evaporation",
+      "definition": "Heat from the sun turns liquid water into invisible water vapour.",
+      "icon": "assets/sprites/journal/evaporation.svg"
+    },
+    {
+      "id": "transpiration",
+      "region": "hydro_valley",
+      "title": "Transpiration",
+      "definition": "Plants release water vapour into the air through their leaves.",
+      "icon": "assets/sprites/journal/transpiration.svg"
+    },
+    {
+      "id": "condensation",
+      "region": "hydro_valley",
+      "title": "Condensation",
+      "definition": "Rising water vapour cools and turns into droplets, forming clouds.",
+      "icon": "assets/sprites/journal/condensation.svg"
+    },
+    {
+      "id": "precipitation",
+      "region": "hydro_valley",
+      "title": "Precipitation",
+      "definition": "Water falls from clouds as rain, snow or hail.",
+      "icon": "assets/sprites/journal/precipitation.svg"
+    },
+    {
+      "id": "infiltration",
+      "region": "hydro_valley",
+      "title": "Infiltration",
       "definition": "Water soaks down into the soil and rock, becoming groundwater.",
-      "color": "#8d6e63" },
-    { "id": "surface_runoff", "region": "hydro_valley", "title": "Surface Runoff",
+      "icon": "assets/sprites/journal/infiltration.svg"
+    },
+    {
+      "id": "surface_runoff",
+      "region": "hydro_valley",
+      "title": "Surface Runoff",
       "definition": "Water that flows over the land into streams and rivers.",
-      "color": "#26c6da" },
-    { "id": "water_cycle", "region": "hydro_valley", "title": "The Water Cycle",
-      "definition": "The continuous journey of water: evaporation, condensation, precipitation and runoff.",
-      "color": "#29b6f6" },
-    { "id": "uneven_distribution", "region": "hydro_valley", "title": "Uneven Distribution",
-      "definition": "Water is spread unevenly, so some places face shortages while others have plenty.",
-      "color": "#ffa726" },
-    { "id": "water_contamination", "region": "hydro_valley", "title": "Water Contamination",
+      "icon": "assets/sprites/journal/surface_runoff.svg"
+    },
+    {
+      "id": "water_cycle",
+      "region": "hydro_valley",
+      "title": "The Water Cycle",
+      "definition": "The continuous movement of water: evaporation, condensation, precipitation and runoff.",
+      "icon": "assets/sprites/journal/water_cycle.svg"
+    },
+    {
+      "id": "uneven_distribution",
+      "region": "hydro_valley",
+      "title": "Uneven Distribution",
+      "definition": "Water is spread unevenly, so some places have plenty and others face shortages.",
+      "icon": "assets/sprites/journal/uneven_distribution.svg"
+    },
+    {
+      "id": "water_contamination",
+      "region": "hydro_valley",
+      "title": "Water Contamination",
       "definition": "Pollutants make water unsafe for people and ecosystems.",
-      "color": "#ab47bc" },
-    { "id": "flood_causes", "region": "hydro_valley", "title": "Flood Causes",
-      "definition": "Heavy rain on sealed surfaces overwhelms drains, causing floods.",
-      "color": "#5c6bc0" },
-    { "id": "drought", "region": "hydro_valley", "title": "Drought",
-      "definition": "A long dry period with little rainfall that causes water shortages.",
-      "color": "#ffb300" },
-    { "id": "water_management", "region": "hydro_valley", "title": "Water Management",
-      "definition": "Using, storing and recycling water wisely to make supplies last.",
-      "color": "#26a69a" },
-    { "id": "singapore_water", "region": "hydro_valley", "title": "Four National Taps",
-      "definition": "Singapore's water sources: catchment, imported water, NEWater and desalinated seawater.",
-      "color": "#ef5350" },
-
-    { "id": "forest_structure", "region": "verdant_canopy", "title": "Forest Structure",
-      "definition": "Rainforest layers from top to bottom: emergent, canopy, understorey, forest floor.",
-      "color": "#43a047" },
-    { "id": "canopy", "region": "verdant_canopy", "title": "The Canopy",
-      "definition": "The dense roof of treetops that catches most of the sunlight.",
-      "color": "#2e7d32" },
-    { "id": "equatorial_climate", "region": "verdant_canopy", "title": "Equatorial Climate",
-      "definition": "Hot and wet all year round near the Equator.",
-      "color": "#fdd835" },
-    { "id": "drip_tip", "region": "verdant_canopy", "title": "Drip Tips",
-      "definition": "Pointed leaf tips that let heavy rain run off quickly.",
-      "color": "#7cb342" },
-    { "id": "buttress_roots", "region": "verdant_canopy", "title": "Buttress Roots",
-      "definition": "Wide roots that support tall trees in the thin rainforest soil.",
-      "color": "#6d4c41" },
-    { "id": "adaptations_match", "region": "verdant_canopy", "title": "Plant Adaptations",
-      "definition": "Drip tips shed rain, buttress roots give support, lianas climb for light.",
-      "color": "#9ccc65" },
-    { "id": "biodiversity", "region": "verdant_canopy", "title": "Biodiversity",
-      "definition": "The huge variety of plant and animal life found in an ecosystem.",
-      "color": "#26c6da" },
-    { "id": "deforestation", "region": "verdant_canopy", "title": "Deforestation",
-      "definition": "Clearing forests for farming, logging and building.",
-      "color": "#8d6e63" },
-    { "id": "deforestation_effects", "region": "verdant_canopy", "title": "Deforestation Effects",
-      "definition": "Loss of biodiversity, soil erosion, habitat destruction and more CO2.",
-      "color": "#a1887f" },
-    { "id": "conservation", "region": "verdant_canopy", "title": "Conservation",
-      "definition": "Using natural resources sustainably so they survive for the future.",
-      "color": "#66bb6a" },
-
-    { "id": "mangrove_environment", "region": "tidewood_mangroves", "title": "Mangrove Environment",
-      "definition": "Warm, salty, muddy coasts flooded by the tides.",
-      "color": "#26a69a" },
-    { "id": "prop_roots", "region": "tidewood_mangroves", "title": "Prop Roots",
-      "definition": "Stilt roots that anchor the tree in soft mud against tides and waves.",
-      "color": "#8d6e63" },
-    { "id": "pneumatophores", "region": "tidewood_mangroves", "title": "Pneumatophores",
-      "definition": "Breathing roots that grow upward out of the mud to take in air.",
-      "color": "#9e9d24" },
-    { "id": "mangrove_value", "region": "tidewood_mangroves", "title": "Value of Mangroves",
+      "icon": "assets/sprites/journal/water_contamination.svg"
+    },
+    {
+      "id": "flood_causes",
+      "region": "hydro_valley",
+      "title": "Floods",
+      "definition": "Too much water arriving too fast to drain away, often worsened by sealed surfaces.",
+      "icon": "assets/sprites/journal/flood_causes.svg"
+    },
+    {
+      "id": "drought",
+      "region": "hydro_valley",
+      "title": "Drought",
+      "definition": "A long dry period with little rainfall, causing water shortages.",
+      "icon": "assets/sprites/journal/drought.svg"
+    },
+    {
+      "id": "water_management",
+      "region": "hydro_valley",
+      "title": "Water Management",
+      "definition": "Sustainable ways to supply water: harvesting, recycling and using it efficiently.",
+      "icon": "assets/sprites/journal/water_management.svg"
+    },
+    {
+      "id": "singapore_water",
+      "region": "hydro_valley",
+      "title": "NEWater",
+      "definition": "Highly treated, recycled used water — one of Singapore's Four National Taps.",
+      "icon": "assets/sprites/journal/singapore_water.svg"
+    },
+    {
+      "id": "forest_structure",
+      "region": "verdant_canopy",
+      "title": "Forest Layers",
+      "definition": "The four rainforest layers: emergent, canopy, understorey and forest floor.",
+      "icon": "assets/sprites/journal/forest_structure.svg"
+    },
+    {
+      "id": "canopy",
+      "region": "verdant_canopy",
+      "title": "Canopy",
+      "definition": "The dense upper roof of treetops that catches most of the sunlight.",
+      "icon": "assets/sprites/journal/canopy.svg"
+    },
+    {
+      "id": "equatorial_climate",
+      "region": "verdant_canopy",
+      "title": "Equatorial Climate",
+      "definition": "Hot and wet all year round, near the Equator.",
+      "icon": "assets/sprites/journal/equatorial_climate.svg"
+    },
+    {
+      "id": "drip_tip",
+      "region": "verdant_canopy",
+      "title": "Drip-Tip Leaves",
+      "definition": "Pointed leaf tips that shed heavy rain quickly to prevent rot.",
+      "icon": "assets/sprites/journal/drip_tip.svg"
+    },
+    {
+      "id": "buttress_roots",
+      "region": "verdant_canopy",
+      "title": "Buttress Roots",
+      "definition": "Wide roots that support tall trees in thin rainforest soil.",
+      "icon": "assets/sprites/journal/buttress_roots.svg"
+    },
+    {
+      "id": "adaptations_match",
+      "region": "verdant_canopy",
+      "title": "Adaptations",
+      "definition": "Special plant features that suit the hot, wet climate.",
+      "icon": "assets/sprites/journal/adaptations_match.svg"
+    },
+    {
+      "id": "biodiversity",
+      "region": "verdant_canopy",
+      "title": "Biodiversity",
+      "definition": "The huge variety of plant and animal life in an ecosystem.",
+      "icon": "assets/sprites/journal/biodiversity.svg"
+    },
+    {
+      "id": "deforestation",
+      "region": "verdant_canopy",
+      "title": "Deforestation",
+      "definition": "Clearing forest for farming, logging and building.",
+      "icon": "assets/sprites/journal/deforestation.svg"
+    },
+    {
+      "id": "deforestation_effects",
+      "region": "verdant_canopy",
+      "title": "Effects of Deforestation",
+      "definition": "Lost biodiversity, soil erosion and destroyed habitats.",
+      "icon": "assets/sprites/journal/deforestation_effects.svg"
+    },
+    {
+      "id": "conservation",
+      "region": "general",
+      "title": "Conservation",
+      "definition": "Using nature sustainably so it stays healthy for the future.",
+      "icon": "assets/sprites/journal/conservation.svg"
+    },
+    {
+      "id": "mangrove_environment",
+      "region": "tidewood_mangroves",
+      "title": "Mangrove Coast",
+      "definition": "A salty, muddy, tidal coastal environment most plants can't survive.",
+      "icon": "assets/sprites/journal/mangrove_environment.svg"
+    },
+    {
+      "id": "prop_roots",
+      "region": "tidewood_mangroves",
+      "title": "Prop Roots",
+      "definition": "Stilt roots that anchor mangroves in soft mud against the tide.",
+      "icon": "assets/sprites/journal/prop_roots.svg"
+    },
+    {
+      "id": "pneumatophores",
+      "region": "tidewood_mangroves",
+      "title": "Breathing Roots",
+      "definition": "Roots that grow upward out of the mud to take in oxygen.",
+      "icon": "assets/sprites/journal/pneumatophores.svg"
+    },
+    {
+      "id": "mangrove_value",
+      "region": "tidewood_mangroves",
+      "title": "Value of Mangroves",
       "definition": "Coast protection, wildlife nurseries and carbon storage.",
-      "color": "#00897b" },
-    { "id": "coastal_protection", "region": "tidewood_mangroves", "title": "Coastal Protection",
-      "definition": "Dense mangrove roots absorb wave energy and reduce erosion.",
-      "color": "#0097a7" },
-    { "id": "mangrove_threats", "region": "tidewood_mangroves", "title": "Mangrove Threats",
-      "definition": "Coastal development and aquaculture clear and destroy mangroves.",
-      "color": "#ef5350" }
+      "icon": "assets/sprites/journal/mangrove_value.svg"
+    },
+    {
+      "id": "coastal_protection",
+      "region": "tidewood_mangroves",
+      "title": "Coastal Protection",
+      "definition": "Mangrove roots absorb wave energy, shielding the shore.",
+      "icon": "assets/sprites/journal/coastal_protection.svg"
+    },
+    {
+      "id": "mangrove_threats",
+      "region": "tidewood_mangroves",
+      "title": "Threats to Mangroves",
+      "definition": "Clearing for development and aquaculture destroys mangroves.",
+      "icon": "assets/sprites/journal/mangrove_threats.svg"
+    }
   ]
 }
