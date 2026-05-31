@@ -4,6 +4,7 @@ import Audio from '../systems/AudioManager.js';
 import { checkAnswer } from '../systems/QuestionEngine.js';
 import { COLORS, textStyle, bodyTextStyle, drawPanel, uiCamera } from '../systems/Theme.js';
 import { VIEW_W, VIEW_H } from '../main.js';
+import { battleBackgroundForRegion, spriteKeyForTrigger } from '../systems/MpwspAssets.js';
 
 // The quiz "battle" engine. You cannot lose: wrong answers show a hint and
 // let you retry the same question. Supports mcq, truefalse, multi, sequence, match.
@@ -47,9 +48,11 @@ export default class EncounterScene extends Phaser.Scene {
   }
 
   _buildScaffold() {
-    this.add.rectangle(0, 0, VIEW_W, VIEW_H, 0x10162e).setOrigin(0);
-    this.add.rectangle(0, 0, VIEW_W, 54, 0x223a66).setOrigin(0);
-    this.add.rectangle(0, 54, VIEW_W, 44, 0x2e7d32).setOrigin(0);
+    const regionId = this.encounter.region;
+    const bgKey = battleBackgroundForRegion(regionId);
+    const bg = this.add.image(VIEW_W / 2, VIEW_H / 2, bgKey).setScrollFactor(0);
+    const scale = Math.max(VIEW_W / bg.width, VIEW_H / bg.height);
+    bg.setScale(scale);
 
     this.add.text(VIEW_W / 2, 4, this.encounter.title, textStyle(8, COLORS.accent)).setOrigin(0.5, 0);
 
@@ -60,12 +63,16 @@ export default class EncounterScene extends Phaser.Scene {
     this._meterMax = 178;
 
     const isBoss = this.encounter.isBoss;
-    this.guardian = this.add.image(255, 70, isBoss ? 'npc_boss' : 'npc_spirit').setScale(isBoss ? 4 : 3);
-    this.tweens.add({ targets: this.guardian, y: 66, duration: 800, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    const gKey = spriteKeyForTrigger(
+      { sprite: isBoss ? 'npc_boss' : 'npc_spirit', id: this.encounter.id },
+      regionId
+    );
+    this.guardian = this.add.sprite(255, 58, gKey, 0).setScale(0.38);
+    this.tweens.add({ targets: this.guardian, y: 54, duration: 800, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
 
-    this.companion = this.add.image(55, 96, 'companion').setScale(2.5);
-    this.tweens.add({ targets: this.companion, y: 92, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
-    this.levelText = this.add.text(8, 100, `Lv ${GameState.data.companionLevel}  XP ${GameState.data.companionXP}`, textStyle(6, COLORS.text));
+    this.companion = this.add.sprite(55, 78, 'mpw_spirit_b', 0).setScale(0.32);
+    this.tweens.add({ targets: this.companion, y: 74, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    this.levelText = this.add.text(8, 88, `Lv ${GameState.data.companionLevel}  XP ${GameState.data.companionXP}`, textStyle(6, COLORS.text));
 
     this.panel = { x: 6, y: 98, w: VIEW_W - 12, h: VIEW_H - 104 };
     drawPanel(this, this.panel.x, this.panel.y, this.panel.w, this.panel.h);

@@ -26,9 +26,9 @@ const config = {
   width: GAME_W,
   height: GAME_H,
   zoom: 1,
-  pixelArt: false,
-  roundPixels: false,
-  antialias: true,
+  pixelArt: true,
+  roundPixels: true,
+  antialias: false,
   backgroundColor: '#0b1020',
   scale: {
     mode: Phaser.Scale.FIT,

@@ -4,6 +4,11 @@ import Audio from '../systems/AudioManager.js';
 import { buildMap, TILE_CODES } from '../systems/MapFactory.js';
 import { COLORS, FONT, textStyle } from '../systems/Theme.js';
 import { TILE, GAME_W, GAME_H } from '../main.js';
+import {
+  groundTextureKey,
+  decorForTile,
+  spriteKeyForTrigger
+} from '../systems/MpwspAssets.js';
 
 const FACING = {
   up: { dx: 0, dy: -1 },
@@ -13,10 +18,6 @@ const FACING = {
 };
 
 const T = TILE_CODES;
-const GRASS_VARIANTS = ['tile_grass', 'tile_grass2', 'tile_grass3'];
-// Tiles drawn as decor on top of a grass base.
-const DECOR = { [T.TREE]: 'tile_tree', [T.ROCK]: 'tile_rock' };
-
 export default class WorldScene extends Phaser.Scene {
   constructor() {
     super('World');
@@ -80,36 +81,23 @@ export default class WorldScene extends Phaser.Scene {
     // Ground pass.
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
-        rt.draw(this._groundKey(tiles[y][x], x, y, hash), x * TILE, y * TILE);
+        rt.draw(this._groundKey(tiles[y][x], x, y), x * TILE, y * TILE);
       }
     }
     // Decor pass (drawn over the grass beneath them).
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         const code = tiles[y][x];
-        if (DECOR[code]) {
-          rt.draw(DECOR[code], x * TILE, y * TILE);
-        } else if (code === T.GRASS && hash(x, y) % 23 === 0) {
-          rt.draw('tile_flower', x * TILE, y * TILE); // sparse wildflowers
+        const decor = decorForTile(code, this.regionId);
+        if (decor) {
+          rt.draw(decor, x * TILE, y * TILE - 16);
         }
       }
     }
   }
 
-  _groundKey(code, x, y, hash) {
-    switch (code) {
-      case T.WATER:
-        return 'tile_water';
-      case T.PATH:
-        return 'tile_path';
-      case T.SAND:
-        return 'tile_sand';
-      case T.MUD:
-        return 'tile_mud';
-      // Trees/rocks/flowers sit on grass.
-      default:
-        return GRASS_VARIANTS[hash(x, y) % GRASS_VARIANTS.length];
-    }
+  _groundKey(code, x, y) {
+    return groundTextureKey(code, x, y);
   }
 
   _spawnTriggers() {
@@ -117,7 +105,8 @@ export default class WorldScene extends Phaser.Scene {
     this.map.triggers.forEach((trig) => {
       const px = trig.x * TILE + TILE / 2;
       const py = trig.y * TILE + TILE / 2;
-      const spr = this.add.image(px, py, trig.sprite || 'npc_spirit').setDepth(5);
+            const sheet = spriteKeyForTrigger(trig, this.regionId);
+      const spr = this.add.sprite(px, py, sheet, 0).setScale(0.42).setDepth(5);
 
       // Cleared encounters get a check tint; dim them slightly.
       let cleared = false;
@@ -169,10 +158,10 @@ export default class WorldScene extends Phaser.Scene {
     const py = y * TILE + TILE / 2;
 
     this._ensureAnims();
-    this.player = this.add.sprite(px, py, 'hero', `${this.facing}0`).setDepth(10);
+    this.player = this.add.sprite(px, py, 'hero', `${this.facing}0`).setScale(0.5).setDepth(10);
 
     // Companion droplet trailing behind (slightly smaller than the hero).
-    this.companion = this.add.image(px - 38, py + 14, 'companion').setScale(0.7).setDepth(9);
+    this.companion = this.add.sprite(px - 48, py + 18, 'mpw_spirit_b', 0).setScale(0.35).setDepth(9);
     this.tweens.add({ targets: this.companion, y: py + 6, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
 
     GameState.data.player = { x, y, facing: this.facing };
