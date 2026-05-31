@@ -1,0 +1,31 @@
+{
+  "regions": [
+    {
+      "id": "hydro_valley",
+      "name": "Hydro Valley",
+      "map": "assets/maps/hydro_valley.json",
+      "badge": "water",
+      "unlockedBy": null,
+      "encounterOrder": ["hv_evaporation", "hv_condensation", "hv_precipitation", "hv_infiltration", "hv_runoff", "hv_boss_flood"],
+      "bossEncounter": "hv_boss_flood"
+    },
+    {
+      "id": "verdant_canopy",
+      "name": "Verdant Canopy",
+      "map": "assets/maps/verdant_canopy.json",
+      "badge": "canopy",
+      "unlockedBy": "water",
+      "encounterOrder": ["vc_structure", "vc_adaptations", "vc_boss_deforestation"],
+      "bossEncounter": "vc_boss_deforestation"
+    },
+    {
+      "id": "tidewood_mangroves",
+      "name": "Tidewood Mangroves",
+      "map": "assets/maps/tidewood_mangroves.json",
+      "badge": "tideguard",
+      "unlockedBy": "canopy",
+      "encounterOrder": ["tm_adaptations", "tm_value", "tm_boss_storm"],
+      "bossEncounter": "tm_boss_storm"
+    }
+  ]
+}

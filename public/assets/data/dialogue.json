@@ -1,0 +1,33 @@
+{
+  "dialogues": [
+    { "id": "hv_intro_ranger", "speaker": "Ranger May",
+      "lines": [
+        "Welcome to Hydro Valley, Geo-Ranger!",
+        "The island's water cycle is broken. Help me fix it, step by step.",
+        "Talk to the spirits along the path. Stand in front of one and press A (or tap).",
+        "Press J anytime to open your Field Journal and review what you have learned." ] },
+    { "id": "hv_sign_path", "speaker": "Wooden Sign",
+      "lines": [
+        "Hydro Valley Trail.",
+        "Follow the path: Mist -> Ridge -> Sky -> Soil -> Riverbed -> Floodmaster.",
+        "Clear all five spirits, then face the Guardian to earn the Water Drop Badge." ] },
+    { "id": "hv_door_locked", "speaker": "Stone Gate",
+      "lines": [
+        "The way to Verdant Canopy is sealed.",
+        "Earn the Water Drop Badge by defeating the Floodmaster to open this gate." ] },
+    { "id": "vc_intro_ranger", "speaker": "Ranger Tan",
+      "lines": [
+        "You made it to Verdant Canopy!",
+        "This rainforest hides many secrets in its layers.",
+        "Study its structure and adaptations, then face the Clearcutter." ] },
+    { "id": "vc_door_locked", "speaker": "Vine Gate",
+      "lines": [
+        "The trail to Tidewood Mangroves is overgrown.",
+        "Earn the Canopy Badge to clear the way." ] },
+    { "id": "tm_intro_ranger", "speaker": "Ranger Siti",
+      "lines": [
+        "Welcome to the Tidewood Mangroves, the island's last frontier.",
+        "These tangled roots protect our coast.",
+        "Learn their secrets, then hold back the Storm Surge to heal the island." ] }
+  ]
+}

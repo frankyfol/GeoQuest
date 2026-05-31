@@ -1,0 +1,25 @@
+{
+  "name": "geoquest",
+  "version": "1.0.0",
+  "description": "GeoQuest: Island of the Living Map — a retro Pokemon-style educational geography RPG for Singapore Secondary 1 (Lower Secondary Geography — Physical).",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "phaser",
+    "education",
+    "geography",
+    "game",
+    "rpg"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "phaser": "^3.80.1"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
+  }
+}
