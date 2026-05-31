@@ -3,12 +3,10 @@ import GameState from '../systems/GameState.js';
 import Audio from '../systems/AudioManager.js';
 import { buildMap, TILE_CODES } from '../systems/MapFactory.js';
 import { COLORS, FONT, textStyle } from '../systems/Theme.js';
-import { TILE, GAME_W, GAME_H } from '../main.js';
-import {
-  groundTextureKey,
-  decorForTile,
-  spriteKeyForTrigger
-} from '../systems/MpwspAssets.js';
+import { TILE, VIEW_W, VIEW_H } from '../main.js';
+import { spriteKeyForTrigger } from '../systems/MpwspAssets.js';
+import { buildTerrainTileLayers, isDecorTile } from '../systems/TerrainAutotile.js';
+import { TILE_PX } from '../systems/AutotileCatalog.js';
 
 const FACING = {
   up: { dx: 0, dy: -1 },
@@ -46,6 +44,8 @@ export default class WorldScene extends Phaser.Scene {
     this._setupInput();
     this._buildTouchControls();
 
+    this._applyDepthSort();
+
     this.moving = false;
     this.moveCooldown = 0;
 
@@ -69,39 +69,58 @@ export default class WorldScene extends Phaser.Scene {
     }
   }
 
-  // ---- rendering -----------------------------------------------------
-  // Bake the whole map into one RenderTexture: a ground pass (grass/path/
-  // water/sand/mud) then a decor pass (trees/rocks/flowers) on top.
+  // ---- rendering (autotiled Phaser tilemap) --------------------------
   _drawGround() {
     const { tiles, width, height } = this.map;
-    const rt = this.add.renderTexture(0, 0, width * TILE, height * TILE).setOrigin(0).setDepth(0);
+    const layers = buildTerrainTileLayers(tiles);
 
-    const hash = (x, y) => Math.abs((x * 92821) ^ (y * 68917) ^ ((x + y) * 40503));
+    this.tilemap = this.make.tilemap({
+      tileWidth: TILE_PX,
+      tileHeight: TILE_PX,
+      width,
+      height
+    });
+    const worldSet = this.tilemap.addTilesetImage('world', 'ts_world', TILE_PX, TILE_PX);
+    const coastSet = this.tilemap.addTilesetImage('coast', 'ts_coast', TILE_PX, TILE_PX);
 
-    // Ground pass.
+    this.groundLayer = this.tilemap.createBlankLayer('ground', worldSet, 0, 0, width, height);
+    this.waterLayer = this.tilemap.createBlankLayer('water', coastSet, 0, 0, width, height);
+    this.groundLayer.setDepth(0);
+    this.waterLayer.setDepth(1);
+
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
-        rt.draw(this._groundKey(tiles[y][x], x, y, tiles), x * TILE, y * TILE);
+        const g = layers.ground[y][x];
+        if (g >= 0) this.groundLayer.putTileAt(g, x, y);
+        const w = layers.water[y][x];
+        if (w != null && w >= 0) this.waterLayer.putTileAt(w, x, y);
       }
     }
-    // Decor pass (drawn over the grass beneath them).
+
+    this.decorSprites = [];
+    const treeKey = this.regionId === 'tidewood_mangroves' ? 'mpw_tree_teal' : 'mpw_tree';
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         const code = tiles[y][x];
-        const decor = decorForTile(code, this.regionId);
-        if (decor) {
-          rt.draw(decor, x * TILE, y * TILE - 16);
-        }
-        if (code === T.GRASS && hash(x, y) % 11 === 0) {
-          rt.draw('mpw_grass', x * TILE + 8, y * TILE + 28);
-        }
-
+        if (!isDecorTile(code)) continue;
+        const px = x * TILE + TILE / 2;
+        const py = y * TILE + TILE;
+        const key = code === T.ROCK ? 'mpw_rock' : treeKey;
+        const spr = this.add.image(px, py, key).setOrigin(0.5, 1);
+        spr.setDepth(py + 0.5);
+        this.decorSprites.push(spr);
       }
     }
   }
 
-  _groundKey(code, x, y, tiles) {
-    return groundTextureKey(code, x, y, tiles);
+  _applyDepthSort() {
+    const y = this.player.y;
+    this.player.setDepth(y + 2);
+    if (this.companion) this.companion.setDepth(y + 1);
+    this.triggerSprites.forEach((ts) => ts.spr.setDepth(ts.spr.y + 2));
+    this.decorSprites?.forEach((spr) => {
+      spr.setDepth(spr.y + (this.player.y < spr.y - 4 ? 3 : 0.5));
+    });
   }
 
   _spawnTriggers() {
@@ -110,7 +129,7 @@ export default class WorldScene extends Phaser.Scene {
       const px = trig.x * TILE + TILE / 2;
       const py = trig.y * TILE + TILE / 2;
             const sheet = spriteKeyForTrigger(trig, this.regionId);
-      const spr = this.add.sprite(px, py, sheet, 0).setScale(0.42).setDepth(5);
+      const spr = this.add.sprite(px, py, sheet, 0).setScale(0.55).setDepth(5);
 
       // Cleared encounters get a check tint; dim them slightly.
       let cleared = false;
@@ -121,7 +140,7 @@ export default class WorldScene extends Phaser.Scene {
 
       // Floating label above NPC.
       const label = this.add
-        .text(px, py - 40, trig.label || '', textStyle(16, COLORS.text))
+        .text(px, py - 22, trig.label || '', textStyle(16, COLORS.text))
         .setOrigin(0.5)
         .setDepth(6);
       label.setVisible(false);
@@ -129,7 +148,7 @@ export default class WorldScene extends Phaser.Scene {
       // check mark for cleared encounters
       let check = null;
       if (cleared) {
-        check = this.add.text(px + 22, py - 26, '\u2713', textStyle(20, COLORS.good)).setOrigin(0.5).setDepth(7);
+        check = this.add.text(px + 12, py - 14, '\u2713', textStyle(20, COLORS.good)).setOrigin(0.5).setDepth(7);
       }
 
       this.triggerSprites.push({ trig, spr, label, check });
@@ -162,10 +181,10 @@ export default class WorldScene extends Phaser.Scene {
     const py = y * TILE + TILE / 2;
 
     this._ensureAnims();
-    this.player = this.add.sprite(px, py, 'hero', `${this.facing}0`).setScale(0.5).setDepth(10);
+    this.player = this.add.sprite(px, py, 'hero', `${this.facing}0`).setScale(0.28).setDepth(10);
 
     // Companion droplet trailing behind (slightly smaller than the hero).
-    this.companion = this.add.sprite(px - 48, py + 18, 'mpw_spirit_b', 0).setScale(0.35).setDepth(9);
+    this.companion = this.add.sprite(px - 14, py + 6, 'mpw_spirit_b', 0).setScale(0.22).setDepth(9);
     this.tweens.add({ targets: this.companion, y: py + 6, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
 
     GameState.data.player = { x, y, facing: this.facing };
@@ -204,9 +223,9 @@ export default class WorldScene extends Phaser.Scene {
     this.hud = this.add.container(0, 0).setScrollFactor(0).setDepth(100);
 
     // Solid top bar (opaque so the map behind never bleeds through).
-    const bar = this.add.rectangle(0, 0, GAME_W, 64, COLORS.panel, 1).setOrigin(0);
-    const barEdge = this.add.rectangle(0, 64, GAME_W, 4, COLORS.border, 1).setOrigin(0);
-    const name = this.add.text(16, 16, this.regionDef ? this.regionDef.name : '', textStyle(28, COLORS.accent));
+    const bar = this.add.rectangle(0, 0, VIEW_W, 16, COLORS.panel, 1).setOrigin(0);
+    const barEdge = this.add.rectangle(0, 16, VIEW_W, 2, COLORS.border, 1).setOrigin(0);
+    const name = this.add.text(4, 4, this.regionDef ? this.regionDef.name : '', textStyle(14, COLORS.accent));
 
     this.hud.add([bar, barEdge, name]);
 
@@ -217,7 +236,7 @@ export default class WorldScene extends Phaser.Scene {
       { key: 'badge_tideguard', flag: 'tideguard' }
     ];
     badgeKeys.forEach((b, i) => {
-      const icon = this.add.image(GAME_W - 44 - i * 64, 32, b.key).setScale(1.6);
+      const icon = this.add.image(VIEW_W - 12 - i * 16, 8, b.key).setScale(0.5);
       icon.setAlpha(GameState.data.badges[b.flag] ? 1 : 0.25);
       this.hud.add(icon);
       b.icon = icon;
@@ -225,8 +244,8 @@ export default class WorldScene extends Phaser.Scene {
     this._badgeIcons = badgeKeys;
 
     // Bottom hint with its own solid strip for legibility over the map.
-    const hintStrip = this.add.rectangle(0, GAME_H - 40, GAME_W, 40, COLORS.panel, 0.92).setOrigin(0);
-    const hint = this.add.text(16, GAME_H - 30, 'Move: Arrows/WASD    Act: SPACE    Journal: J    Pause: ESC', textStyle(18, COLORS.textDim));
+    const hintStrip = this.add.rectangle(0, VIEW_H - 10, VIEW_W, 10, COLORS.panel, 0.92).setOrigin(0);
+    const hint = this.add.text(4, VIEW_H - 9, 'Move: Arrows/WASD    Act: SPACE    Journal: J    Pause: ESC', textStyle(6, COLORS.textDim));
     this.hud.add([hintStrip, hint]);
   }
 
@@ -269,7 +288,7 @@ export default class WorldScene extends Phaser.Scene {
     };
 
     const baseX = 112;
-    const baseY = GAME_H - 168;
+    const baseY = VIEW_H - 168;
     this._dpadHeld = null;
     const dpad = (x, y, label, dir) => {
       const o = mk(x, y, label, () => {
@@ -284,8 +303,8 @@ export default class WorldScene extends Phaser.Scene {
     dpad(baseX - 72, baseY, '\u25C0', 'left');
     dpad(baseX + 72, baseY, '\u25B6', 'right');
 
-    mk(GAME_W - 120, GAME_H - 120, 'A', () => this._tryAction());
-    mk(GAME_W - 120, GAME_H - 232, 'J', () => this._openJournal());
+    mk(VIEW_W - 120, VIEW_H - 120, 'A', () => this._tryAction());
+    mk(VIEW_W - 120, VIEW_H - 232, 'J', () => this._openJournal());
   }
 
   // ---- movement ------------------------------------------------------
@@ -304,6 +323,7 @@ export default class WorldScene extends Phaser.Scene {
     else if (this.cursors.right.isDown || this.keys.D.isDown || this._dpadHeld === 'right') dir = 'right';
 
     if (dir) this._tryMove(dir);
+    this._applyDepthSort();
   }
 
   _tryMove(dir) {
@@ -352,6 +372,7 @@ export default class WorldScene extends Phaser.Scene {
         this.moving = false;
         GameState.data.player = { x: this.tileX, y: this.tileY, facing: this.facing };
         this._moveCompanion(tx, ty);
+        this._applyDepthSort();
         GameState.save();
         this._checkStepTrigger();
         // Stop the walk cycle if no movement key is still held.

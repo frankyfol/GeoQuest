@@ -12,20 +12,18 @@ import TutorialScene from './scenes/TutorialScene.js';
 import EndScene from './scenes/EndScene.js';
 import GameState from './systems/GameState.js';
 
-// 64px tiles on a 20×15 grid → 1280×960 world. UI scenes use 320×240 + 4× zoom.
-export const TILE = 64;
-export const GAME_W = 1280;
-export const GAME_H = 960;
+// 16px tiles (MPWSP01); viewport 320×240 scaled ×3.
+export const TILE = 16;
 export const VIEW_W = 320;
 export const VIEW_H = 240;
-export const UI_ZOOM = 4;
+export const ZOOM = 3;
 
 const config = {
   type: Phaser.AUTO,
   parent: 'game-root',
-  width: GAME_W,
-  height: GAME_H,
-  zoom: 1,
+  width: VIEW_W,
+  height: VIEW_H,
+  zoom: ZOOM,
   pixelArt: true,
   roundPixels: true,
   antialias: false,

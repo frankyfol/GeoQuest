@@ -1,11 +1,11 @@
 // Theme.js — colours, readable UI typography, panels, and UI camera setup.
-import { UI_ZOOM, VIEW_W, VIEW_H } from '../main.js';
+import { ZOOM, VIEW_W, VIEW_H } from '../main.js';
 
 /** Clear sans-serif for all in-game text (replaces bitmap Press Start 2P). */
 export const FONT = '"Nunito Sans", "Segoe UI", system-ui, sans-serif';
 
 export function uiCamera(scene) {
-  scene.cameras.main.setZoom(UI_ZOOM);
+  scene.cameras.main.setZoom(ZOOM);
   scene.cameras.main.centerOn(VIEW_W / 2, VIEW_H / 2);
 }
 

@@ -13,6 +13,8 @@ export default class PreloadScene extends Phaser.Scene {
     this._buildLoadingBar();
 
     registerMpwspAssets(this);
+    this.load.image('ts_world', 'assets/mpwsp01/tilesets/world.png');
+    this.load.image('ts_coast', 'assets/mpwsp01/tilesets/coast.png');
 
     const base = 'assets/data';
     this.load.json('regions', `${base}/regions.json`);

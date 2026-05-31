@@ -16,11 +16,17 @@ async function waitGame(page) {
 
 async function newGameWorld(page) {
   await page.evaluate(() => {
-    localStorage.removeItem('geoquest_save');
     window.__GS.newGame();
-    window.__GAME.scene.start('World');
+    window.__GS.data.tutorialSeen = true;
+    window.__GS.save();
+    const g = window.__GAME;
+    ['Title', 'Tutorial', 'Preload'].forEach((k) => {
+      if (g.scene.isActive(k)) g.scene.stop(k);
+    });
+    g.scene.start('World');
   });
-  await page.waitForTimeout(800);
+  await page.waitForFunction(() => window.__GAME.scene.isActive('World'), { timeout: 15000 });
+  await page.waitForTimeout(1500);
 }
 
 async function openDialogue(page, id) {
@@ -57,7 +63,7 @@ await mkdir(OUT, { recursive: true });
 await waitGame(page);
 
 await newGameWorld(page);
-await page.screenshot({ path: `${OUT}/01-world-overworld.png` });
+await page.locator('#game-root').screenshot({ path: `${OUT}/01-world-overworld.png` });
 
 await openDialogue(page, 'hv_intro_ranger');
 await page.screenshot({ path: `${OUT}/02-dialogue-line1.png` });
