@@ -81,7 +81,7 @@ export default class WorldScene extends Phaser.Scene {
     // Ground pass.
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
-        rt.draw(this._groundKey(tiles[y][x], x, y), x * TILE, y * TILE);
+        rt.draw(this._groundKey(tiles[y][x], x, y, tiles), x * TILE, y * TILE);
       }
     }
     // Decor pass (drawn over the grass beneath them).
@@ -92,12 +92,16 @@ export default class WorldScene extends Phaser.Scene {
         if (decor) {
           rt.draw(decor, x * TILE, y * TILE - 16);
         }
+        if (code === T.GRASS && hash(x, y) % 11 === 0) {
+          rt.draw('mpw_grass', x * TILE + 8, y * TILE + 28);
+        }
+
       }
     }
   }
 
-  _groundKey(code, x, y) {
-    return groundTextureKey(code, x, y);
+  _groundKey(code, x, y, tiles) {
+    return groundTextureKey(code, x, y, tiles);
   }
 
   _spawnTriggers() {

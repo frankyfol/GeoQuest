@@ -15,6 +15,7 @@ export function registerMpwspAssets(scene) {
   const l = scene.load;
   l.spritesheet('mpw_world', `${BASE}/tilesets/world.png`, { frameWidth: 64, frameHeight: 64 });
   l.image('mpw_sand', `${BASE}/objects/sand.png`);
+  l.image('mpw_grass', `${BASE}/objects/grass.png`);
   l.image('mpw_tree', `${BASE}/objects/green_tree_small.png`);
   l.image('mpw_tree_teal', `${BASE}/objects/teal_tree_small.png`);
   l.image('mpw_rock', `${BASE}/objects/grassrock1.png`);
@@ -57,7 +58,8 @@ export function buildMpwspTextures(scene) {
     'mpw_tree_teal',
     'mpw_rock',
     'mpw_gate',
-    'mpw_sand'
+    'mpw_sand',
+    'mpw_grass'
   ].forEach((k) => {
     if (scene.textures.exists(k)) {
       scene.textures.get(k).setFilter(Phaser.Textures.FilterMode.NEAREST);
@@ -115,11 +117,34 @@ export function ensureGroundFrameTextures(scene) {
   });
 }
 
-export function groundTextureKey(code, x, y) {
+
+function _neighborMatch(tiles, x, y, codes) {
+  if (!tiles) return false;
+  const h = tiles.length;
+  const w = tiles[0].length;
+  for (const [dx, dy] of [
+    [0, 1],
+    [0, -1],
+    [1, 0],
+    [-1, 0]
+  ]) {
+    const nx = x + dx;
+    const ny = y + dy;
+    if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+    if (codes.has(tiles[ny][nx])) return true;
+  }
+  return false;
+}
+
+export function groundTextureKey(code, x, y, tiles = null) {
   const pick = (arr) => {
     const idx = arr[Math.abs((x * 92821) ^ (y * 68917)) % arr.length];
     return `mpw_world_${idx}`;
   };
+  if (tiles && code === T.GRASS) {
+    if (_neighborMatch(tiles, x, y, new Set([T.WATER, T.MUD]))) return 'mpw_sand';
+    if (_neighborMatch(tiles, x, y, new Set([T.PATH]))) return pick(PATH_FRAMES);
+  }
   switch (code) {
     case T.PATH:
       return pick(PATH_FRAMES);
